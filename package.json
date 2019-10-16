@@ -51,6 +51,7 @@
     }
   },
   "dependencies": {
+    "junk": "^3.1.0",
     "mongo-uri": "^0.1.2",
     "mongodb-backup": "^1.6.9",
     "mongodb-extended-json": "^1.10.2",
