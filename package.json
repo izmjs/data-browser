@@ -49,5 +49,11 @@
       "pre-commit": "lint-staged && npm test",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
+  },
+  "dependencies": {
+    "mongo-uri": "^0.1.2",
+    "mongodb-backup": "^1.6.9",
+    "mongodb-extended-json": "^1.10.2",
+    "mongodb-restore": "^1.6.2"
   }
 }
