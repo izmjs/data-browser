@@ -1,0 +1,53 @@
+{
+  "name": "data-browser",
+  "version": "0.1.0",
+  "license": "ISC",
+  "scripts": {
+    "test": "node ../../scripts/run-tests data-browser",
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "format:write": "prettier **/*.{json,md} --write",
+    "format:test": "prettier **/*.{json,md} --list-different",
+    "release:major": "release-it major",
+    "release:minor": "release-it minor",
+    "release:patch": "release-it patch"
+  },
+  "description": "The data-browser module",
+  "keywords": [
+    "data-browser",
+    "boilerplate-fm",
+    "functional-module"
+  ],
+  "repository": {
+    "type": "github",
+    "url": "https://github.com/izmjs/data-browser.git"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^8.2.0",
+    "@commitlint/config-conventional": "^8.2.0",
+    "lint-staged": "^9.4.2",
+    "husky": "^3.0.8",
+    "release-it": "^12.4.3",
+    "eslint": "^6.5.1",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2"
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "lint-staged": {
+    "**/*.{json,md}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "post-merge": "npm i",
+      "pre-commit": "lint-staged && npm test",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  }
+}

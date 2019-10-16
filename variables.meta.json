@@ -1,0 +1,10 @@
+{
+  "EXAMPLE_KEY": {
+    "name": "An example key for the module \"data-browser\"",
+    "defaultValue": "",
+    "scope": "data-browser",
+    "schema": {
+      "type": "string"
+    }
+  }
+}
