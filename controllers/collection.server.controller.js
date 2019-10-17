@@ -1,25 +1,14 @@
-const express = require('express');
-
-const router = express.Router();
 const common = require('./common.server.controller');
 
-// Create a new collection
-router.post('/collection/:conn/:db/coll_create', (req, res) => {
-  const connection_list = req.app.locals.dbConnections;
-
-  // Check for existance of connection
-  if (connection_list[req.params.conn] === undefined) {
-    res.status(400).json({ msg: req.t('Invalid connection') });
-    return;
-  }
-
-  // Validate database name
-  if (req.params.db.indexOf(' ') > -1) {
-    res.status(400).json({ msg: req.t('Invalid database name') });
-  }
-
-  // Get DB form pool
-  const mongo_db = connection_list[req.params.conn].native.db(req.params.db);
+/**
+ * Create a new collection
+ * @controller Create
+ * @param {IncommingMessage} req The request
+ * @param {OutcommingMessage} res The response
+ * @param {Function} next Go to the next middleware
+ */
+exports.create = async function create(req, res) {
+  const mongo_db = req.params.db;
 
   // adding a new collection
   mongo_db.createCollection(req.body.collection_name, (err) => {
@@ -30,31 +19,24 @@ router.post('/collection/:conn/:db/coll_create', (req, res) => {
       res.status(200).json({ msg: req.t('Collection successfully created') });
     }
   });
-});
+};
 
-// Rename an existing collection
-router.post('/collection/:conn/:db/:coll/coll_name_edit', (req, res) => {
-  const connection_list = req.app.locals.dbConnections;
-
-  // Check for existance of connection
-  if (connection_list[req.params.conn] === undefined) {
-    res.status(400).json({ msg: req.t('Invalid connection') });
-    return;
-  }
-
-  // Validate database name
-  if (req.params.db.indexOf(' ') > -1) {
-    res.status(400).json({ msg: req.t('Invalid database name') });
-  }
-
-  // Get DB form pool
-  const mongo_db = connection_list[req.params.conn].native.db(req.params.db);
+/**
+ * Rename an existing collection
+ * @controller Rename
+ * @param {IncommingMessage} req The request
+ * @param {OutcommingMessage} res The response
+ * @param {Function} next Go to the next middleware
+ */
+exports.rename = async function rename(req, res) {
+  const { db: mongo_db, collectionName } = req.params;
+  const { new_collection_name } = req.body;
 
   // change a collection name
   mongo_db
-    .collection(req.params.coll)
+    .collection(collectionName)
     .rename(
-      req.body.new_collection_name,
+      new_collection_name,
       { dropTarget: false },
       (err) => {
         if (err) {
@@ -65,25 +47,17 @@ router.post('/collection/:conn/:db/:coll/coll_name_edit', (req, res) => {
         }
       },
     );
-});
+};
 
-// Delete a collection
-router.post('/collection/:conn/:db/coll_delete', (req, res) => {
-  const connection_list = req.app.locals.dbConnections;
-
-  // Check for existance of connection
-  if (connection_list[req.params.conn] === undefined) {
-    res.status(400).json({ msg: req.t('Invalid connection') });
-    return;
-  }
-
-  // Validate database name
-  if (req.params.db.indexOf(' ') > -1) {
-    res.status(400).json({ msg: req.t('Invalid database name') });
-  }
-
-  // Get DB form pool
-  const mongo_db = connection_list[req.params.conn].native.db(req.params.db);
+/**
+ * Delete a collection
+ * @controller Delete
+ * @param {IncommingMessage} req The request
+ * @param {OutcommingMessage} res The response
+ * @param {Function} next Go to the next middleware
+ */
+exports.remove = async function remove(req, res) {
+  const mongo_db = req.params.db;
 
   // delete a collection
   mongo_db.dropCollection(req.body.collection_name, (err) => {
@@ -94,69 +68,60 @@ router.post('/collection/:conn/:db/coll_delete', (req, res) => {
       res.status(200).json({ msg: req.t('Collection successfully deleted'), coll_name: req.body.collection_name });
     }
   });
-});
+};
 
-// Exports a collection
-router.get('/collection/:conn/:db/:coll/export/:excludedID?', (req, res) => {
-  const connection_list = req.app.locals.dbConnections;
-
-  // Check for existance of connection
-  if (connection_list[req.params.conn] === undefined) {
-    common.render_error(res, req, req.t('Invalid connection name'), req.params.conn);
-    return;
-  }
-
-  // Validate database name
-  if (req.params.db.indexOf(' ') > -1) {
-    common.render_error(res, req, req.t('Invalid database name'), req.params.conn);
-    return;
-  }
-
+/**
+ * Exports a collection
+ * @controller Export
+ * @param {IncommingMessage} req The request
+ * @param {OutcommingMessage} res The response
+ * @param {Function} next Go to the next middleware
+ */
+exports.exportCollection = async function exportCollection(req, res) {
   // exclude _id from export
   let exportID = {};
-  if (req.params.excludedID === 'true') {
+  if (req.query.excludeID === 'true') {
     exportID = { _id: 0 };
   }
 
   // Get DB's form pool
-  const mongo_db = connection_list[req.params.conn].native.db(req.params.db);
+  const mongo_db = req.params.db;
 
-  mongo_db.collection(req.params.coll).find({}, exportID).toArray((err, data) => {
+  mongo_db.collection(req.params.collectionName).find({}, exportID).toArray((err, data) => {
     if (data !== '') {
-      res.set({ 'Content-Disposition': `attachment; filename=${req.params.coll}.json` });
+      res.set({ 'Content-Disposition': `attachment; filename=${req.params.collectionName}.json` });
       res.send(JSON.stringify(data, null, 2));
     } else {
       common.render_error(res, req, req.t('Export error: Collection not found'), req.params.conn);
     }
   });
-});
+};
 
-// Create a new collection index
-router.post('/collection/:conn/:db/:coll/create_index', (req, res) => {
-  const connection_list = req.app.locals.dbConnections;
+/**
+ * Create a new collection index
+ * @controller Create Index
+ * @param {IncommingMessage} req The request
+ * @param {OutcommingMessage} res The response
+ * @param {Function} next Go to the next middleware
+ */
+exports.createIndex = async function createIndex(req, res) {
+  const mongo_db = req.params.db;
+  let indexData = {};
 
-  // Check for existance of connection
-  if (connection_list[req.params.conn] === undefined) {
-    res.status(400).json({ msg: req.t('Invalid connection') });
-    return;
+  try {
+    indexData = JSON.parse(req.body[0]);
+  } catch (e) {
+    console.error(`Error creating index: ${e.message}`);
   }
-
-  // Validate database name
-  if (req.params.db.indexOf(' ') > -1) {
-    res.status(400).json({ msg: req.t('Invalid database name') });
-  }
-
-  // Get DB form pool
-  const mongo_db = connection_list[req.params.conn].native.db(req.params.db);
 
   // adding a new collection
   const unique_bool = (req.body[1] === 'true');
   const sparse_bool = (req.body[2] === 'true');
   const options = { unique: unique_bool, background: true, sparse: sparse_bool };
   mongo_db
-    .collection(req.params.coll)
+    .collection(req.params.collectionName)
     .createIndex(
-      JSON.parse(req.body[0]),
+      indexData,
       options,
       (err) => {
         if (err) {
@@ -167,37 +132,33 @@ router.post('/collection/:conn/:db/:coll/create_index', (req, res) => {
         }
       },
     );
-});
+};
 
-// Drops an existing collection index
-router.post('/collection/:conn/:db/:coll/drop_index', (req, res) => {
-  const connection_list = req.app.locals.dbConnections;
-
-  // Check for existance of connection
-  if (connection_list[req.params.conn] === undefined) {
-    res.status(400).json({ msg: req.t('Invalid connection') });
-    return;
-  }
-
-  // Validate database name
-  if (req.params.db.indexOf(' ') > -1) {
-    res.status(400).json({ msg: req.t('Invalid database name') });
-  }
-
-  // Get DB form pool
-  const mongo_db = connection_list[req.params.conn].native.db(req.params.db);
+/**
+ * Drops an existing collection index
+ * @controller Dropn Index
+ * @param {IncommingMessage} req The request
+ * @param {OutcommingMessage} res The response
+ * @param {Function} next Go to the next middleware
+ */
+exports.dropIndex = async function dropIndex(req, res) {
+  const mongo_db = req.params.db;
 
   // adding a new index
-  mongo_db.collection(req.params.coll).indexes((err, indexes) => {
-    mongo_db.collection(req.params.coll).dropIndex(indexes[req.body.index].name, (e) => {
-      if (e) {
-        console.error(`Error dropping Index: ${e}`);
-        res.status(400).json({ msg: `${req.t('Error dropping Index')}: ${e}` });
-      } else {
-        res.status(200).json({ msg: req.t('Index successfully dropped') });
-      }
-    });
-  });
-});
+  mongo_db.collection(req.params.collectionName).indexes((err, indexes) => {
+    if (indexes.length <= req.body.index) {
+      return res.status(400).json({ msg: `${req.t('Error dropping Index')}: index > ${indexes.length - 1}` });
+    }
 
-module.exports = router;
+    return mongo_db
+      .collection(req.params.collectionName)
+      .dropIndex(indexes[req.body.index].name, (e) => {
+        if (e) {
+          console.error(`Error dropping Index: ${e}`);
+          res.status(400).json({ msg: `${req.t('Error dropping Index')}: ${e}` });
+        } else {
+          res.status(200).json({ msg: req.t('Index successfully dropped') });
+        }
+      });
+  });
+};
