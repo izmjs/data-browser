@@ -3,11 +3,6 @@ const express = require('express');
 const router = express.Router();
 const common = require('./common.server.controller');
 
-// runs on all routes and checks password if one is setup
-router.all('/collection/*', common.checkLogin, (req, res, next) => {
-  next();
-});
-
 // Create a new collection
 router.post('/collection/:conn/:db/coll_create', (req, res) => {
   const connection_list = req.app.locals.dbConnections;

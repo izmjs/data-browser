@@ -51,10 +51,13 @@
     }
   },
   "dependencies": {
+    "async": "^3.1.0",
     "junk": "^3.1.0",
     "mongo-uri": "^0.1.2",
+    "mongodb": "^3.3.3",
     "mongodb-backup": "^1.6.9",
     "mongodb-extended-json": "^1.10.2",
-    "mongodb-restore": "^1.6.2"
+    "mongodb-restore": "^1.6.2",
+    "nedb": "^1.8.0"
   }
 }

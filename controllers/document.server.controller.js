@@ -6,11 +6,6 @@ const router = express.Router();
 
 const common = require('./common.server.controller');
 
-// runs on all routes and checks password if one is setup
-router.all('/document/*', common.checkLogin, (req, res, next) => {
-  next();
-});
-
 // Inserts a new document
 router.post('/document/:conn/:db/:coll/insert_doc', (req, res) => {
   const connection_list = req.app.locals.dbConnections;

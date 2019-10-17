@@ -1,37 +1,62 @@
-const _ = require('lodash');
-const { readdir } = require('fs');
-const { join, resolve } = require('path');
-const { promisify } = require('util');
-const { not } = require('junk');
+const fs = require('fs');
+const junk = require('junk');
+const async = require('async');
+const { ObjectID } = require('mongodb');
+const Datastore = require('nedb');
+const mongoose = require('mongoose');
+const { join } = require('path');
 
-const readdir$ = promisify(readdir);
+// setup DB for server stats
+
+const db = new Datastore({
+  filename: join(__dirname, '../data/dbStats.db'),
+  autoload: true,
+});
+
+/**
+ * Init request params
+ * @controller Init
+ * @param {IncommingMessage} req The request
+ * @param {OutcommingMessage} res The response
+ * @param {Function} next Go to the next middleware
+ */
+exports.init = async function init(req, res, next) {
+  req.db = db;
+  req.params.conn = mongoose.connection;
+  req.params.db = mongoose.connection.db;
+  return next();
+};
 
 /**
  * gets some db stats
  * @param {Object} mongo_db MongoDB client
  */
-exports.get_db_status = async (mongo_db) => {
+exports.get_db_status = function get_db_status(mongo_db, cb) {
   const adminDb = mongo_db.admin();
-  const serverStatus$ = promisify(adminDb.serverStatus);
-
-  const status = await serverStatus$();
-  return status;
+  adminDb.serverStatus((err, status) => {
+    if (err) {
+      cb('Error', null);
+    } else {
+      cb(null, status);
+    }
+  });
 };
 
 /**
  * gets the backup dirs
  */
-exports.get_backups = async () => {
+exports.get_backups = function get_backups(cb) {
   const backupPath = join(__dirname, '../backups');
 
-  const files = await readdir$(backupPath);
-  return files.filter(not);
+  fs.readdir(backupPath, (err, files) => {
+    cb(null, files.filter(junk.not));
+  });
 };
 
 /**
  * gets the db stats
  */
-exports.get_db_stats = async (mongo_db, db_name, cb) => {
+exports.get_db_stats = function get_db_stats(mongo_db, db_name, cb) {
   const db_obj = {};
 
   // if at connection level we loop db's and collections
@@ -43,35 +68,20 @@ exports.get_db_stats = async (mongo_db, db_name, cb) => {
         return;
       }
       if (db_list !== undefined) {
-        // const ordered = exports.order_object(db_list.databases);
-        // Object.keys(ordered).forEach(async (key) => {
-        //   const value = ordered[key];
-        //   const skipped_dbs = ['null', 'admin', 'local'];
-
-        //   if(skipped_dbs.includes) {
-        //     return;
-        //   }
-
-        //   const tempDBName = value.name;
-        //   const toArray$ = promisify(mongo_db.db(tempDBName).listCollections().toArray);
-
-        //   const coll_list = await toArray$();
-        //   const coll_obj = {};
-        // });
         async.forEachOf(exports.order_object(db_list.databases), (value, key, callback) => {
           exports.order_object(db_list.databases);
           const skipped_dbs = ['null', 'admin', 'local'];
           if (skipped_dbs.indexOf(value.name) === -1) {
             const tempDBName = value.name;
-            mongo_db.db(tempDBName).listCollections().toArray((err, coll_list) => {
+            mongo_db.db(tempDBName).listCollections().toArray((e1, coll_list) => {
               const coll_obj = {};
-              async.forEachOf(exports.cleanCollections(coll_list), (value, key, callback) => {
-                mongo_db.db(tempDBName).collection(value).stats((err, coll_stat) => {
-                  coll_obj[value] = { Storage: coll_stat.size, Documents: coll_stat.count };
-                  callback();
+              async.forEachOf(exports.cleanCollections(coll_list), (v1, k1, cb1) => {
+                mongo_db.db(tempDBName).collection(v1).stats((e4, coll_stat) => {
+                  coll_obj[v1] = { Storage: coll_stat.size, Documents: coll_stat.count };
+                  cb1();
                 });
-              }, (err) => {
-                if (err) console.error(err.message);
+              }, (e2) => {
+                if (e2) console.error(e2.message);
                 // add the collection object to the DB object with the DB as key
                 db_obj[value.name] = exports.order_object(coll_obj);
                 callback();
@@ -80,8 +90,8 @@ exports.get_db_stats = async (mongo_db, db_name, cb) => {
           } else {
             callback();
           }
-        }, (err) => {
-          if (err) console.error(err.message);
+        }, (e3) => {
+          if (e3) console.error(e3.message);
           // wrap this whole thing up
           cb(null, exports.order_object(db_obj));
         });
@@ -95,7 +105,7 @@ exports.get_db_stats = async (mongo_db, db_name, cb) => {
     mongo_db.db(db_name).listCollections().toArray((err, coll_list) => {
       const coll_obj = {};
       async.forEachOf(exports.cleanCollections(coll_list), (value, key, callback) => {
-        mongo_db.db(db_name).collection(value).stats((err, coll_stat) => {
+        mongo_db.db(db_name).collection(value).stats((e1, coll_stat) => {
           coll_obj[value] = {
             Storage: coll_stat ? coll_stat.size : 0,
             Documents: coll_stat ? coll_stat.count : 0,
@@ -103,8 +113,8 @@ exports.get_db_stats = async (mongo_db, db_name, cb) => {
 
           callback();
         });
-      }, (err) => {
-        if (err) console.error(err.message);
+      }, (e2) => {
+        if (e2) console.error(e2.message);
         db_obj[db_name] = exports.order_object(coll_obj);
         cb(null, db_obj);
       });
@@ -114,7 +124,6 @@ exports.get_db_stats = async (mongo_db, db_name, cb) => {
 
 // gets the Databases
 exports.get_db_list = function get_db_list(uri, mongo_db, cb) {
-  const async = require('async');
   const adminDb = mongo_db.admin();
   const db_arr = [];
 
@@ -129,8 +138,8 @@ exports.get_db_list = function get_db_list(uri, mongo_db, cb) {
             db_arr.push(value.name);
           }
           callback();
-        }, (err) => {
-          if (err) console.error(err.message);
+        }, (e1) => {
+          if (e1) console.error(e1.message);
           exports.order_array(db_arr);
           cb(null, db_arr);
         });
@@ -149,7 +158,6 @@ exports.get_db_list = function get_db_list(uri, mongo_db, cb) {
 // the value will be an ObjectId (hopefully) so we try that first then go from there
 exports.get_id_type = function get_id_type(mongo, collection, doc_id, cb) {
   if (doc_id) {
-    const { ObjectID } = require('mongodb');
     // if a valid ObjectId we try that, then then try as a string
     if (ObjectID.isValid(doc_id)) {
       mongo.collection(collection).findOne({ _id: ObjectID(doc_id) }, (err, doc) => {
@@ -157,10 +165,10 @@ exports.get_id_type = function get_id_type(mongo, collection, doc_id, cb) {
           // doc_id is an ObjectId
           cb(null, { doc_id_type: ObjectID(doc_id), doc });
         } else {
-          mongo.collection(collection).findOne({ _id: doc_id }, (err, doc) => {
-            if (doc) {
+          mongo.collection(collection).findOne({ _id: doc_id }, (e1, d) => {
+            if (d) {
               // doc_id is string
-              cb(null, { doc_id_type: doc_id, doc });
+              cb(null, { doc_id_type: doc_id, doc: d });
             } else {
               cb('Document not found', { doc_id_type: null, doc: null });
             }
@@ -169,15 +177,15 @@ exports.get_id_type = function get_id_type(mongo, collection, doc_id, cb) {
       });
     } else {
       // if the value is not a valid ObjectId value we try as an integer then as a last resort, a string.
-      mongo.collection(collection).findOne({ _id: parseInt(doc_id) }, (err, doc) => {
+      mongo.collection(collection).findOne({ _id: parseInt(doc_id, 10) }, (err, doc) => {
         if (doc) {
           // doc_id is integer
-          cb(null, { doc_id_type: parseInt(doc_id), doc });
+          cb(null, { doc_id_type: parseInt(doc_id, 10), doc });
         } else {
-          mongo.collection(collection).findOne({ _id: doc_id }, (err, doc) => {
-            if (doc) {
+          mongo.collection(collection).findOne({ _id: doc_id }, (e1, d) => {
+            if (d) {
               // doc_id is string
-              cb(null, { doc_id_type: doc_id, doc });
+              cb(null, { doc_id_type: doc_id, doc: d });
             } else {
               cb('Document not found', { doc_id_type: null, doc: null });
             }
@@ -192,7 +200,6 @@ exports.get_id_type = function get_id_type(mongo, collection, doc_id, cb) {
 
 // gets the Databases and collections
 exports.get_sidebar_list = function get_sidebar_list(mongo_db, db_name, cb) {
-  const async = require('async');
   const db_obj = {};
 
   // if no DB is specified, we get all DBs and collections
@@ -203,17 +210,17 @@ exports.get_sidebar_list = function get_sidebar_list(mongo_db, db_name, cb) {
         async.forEachOf(db_list.databases, (value, key, callback) => {
           const skipped_dbs = ['null', 'admin', 'local'];
           if (skipped_dbs.indexOf(value.name) === -1) {
-            mongo_db.db(value.name).listCollections().toArray((err, collections) => {
-              collections = exports.cleanCollections(collections);
-              exports.order_array(collections);
-              db_obj[value.name] = collections;
+            mongo_db.db(value.name).listCollections().toArray((e1, collections) => {
+              const list = exports.cleanCollections(collections);
+              exports.order_array(list);
+              db_obj[value.name] = list;
               callback();
             });
           } else {
             callback();
           }
-        }, (err) => {
-          if (err) console.error(err.message);
+        }, (e2) => {
+          if (e2) console.error(e2.message);
           cb(null, exports.order_object(db_obj));
         });
       } else {
@@ -222,9 +229,9 @@ exports.get_sidebar_list = function get_sidebar_list(mongo_db, db_name, cb) {
     });
   } else {
     mongo_db.db(db_name).listCollections().toArray((err, collections) => {
-      collections = exports.cleanCollections(collections);
-      exports.order_array(collections);
-      db_obj[db_name] = collections;
+      const list = exports.cleanCollections(collections);
+      exports.order_array(list);
+      db_obj[db_name] = list;
       cb(null, db_obj);
     });
   }
@@ -235,8 +242,9 @@ exports.get_sidebar_list = function get_sidebar_list(mongo_db, db_name, cb) {
  * @param {Object} unordered The object to order
  */
 exports.order_object = function order_object(unordered) {
-  const ordered = {};
+  let ordered;
   if (unordered !== undefined) {
+    ordered = {};
     const keys = Object.keys(unordered);
     exports.order_array(keys);
     keys.forEach((key) => {
@@ -250,18 +258,17 @@ exports.order_object = function order_object(unordered) {
  * Sort the array
  * @param {Array<String>} array Array of strings to sort
  */
-exports.order_array = (array) => {
-  if (!Array.isArray(array)) {
-    return array;
+exports.order_array = function order_array(array) {
+  if (array) {
+    array.sort((a, b) => {
+      const A = a.toLowerCase();
+      const B = b.toLowerCase();
+      if (A === B) return 0;
+      if (A > B) return 1;
+      return -1;
+    });
   }
-
-  return array.sort((a, b) => {
-    const A = a.toLowerCase();
-    const B = b.toLowerCase();
-    if (A === B) return 0;
-    if (A > B) return 1;
-    return -1;
-  });
+  return array;
 };
 
 /**
@@ -271,16 +278,15 @@ exports.order_array = (array) => {
  * @param {Error} err The exception
  * @param {MongoConnection} conn MongDB connection
  */
-exports.render_error = (res, req, err, conn) => {
+exports.render_error = function render_error(res, req, err, conn) {
   const connection_list = req.nconf.connections.get('connections');
 
   let conn_string = '';
-
   if (connection_list[conn] !== undefined) {
     conn_string = connection_list[conn].connection_string;
   }
 
-  res.render(resolve(__dirname, 'views/error'), {
+  res.render('error', {
     message: err,
     conn,
     conn_string,

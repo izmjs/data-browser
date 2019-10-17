@@ -5,7 +5,11 @@ module.exports = (config) => {
 
   return {
     'data-browser': {
-      exampleVar: env.get('EXAMPLE_KEY', SCOPE),
+      addIamToGuest: env.get('ADD_IAM_TO_GUEST', SCOPE),
+      monitoring: {
+        enable: env.get('MONITORING_ENABLE', SCOPE),
+        interval: env.get('MONITORING_INTERVAL', SCOPE),
+      },
     },
   };
 };

@@ -2,12 +2,8 @@ const express = require('express');
 const MongoURI = require('mongo-uri');
 
 const router = express.Router();
-const common = require('./common.server.controller');
 
 const connPool = {};
-
-// runs on all routes and checks password if one is setup
-router.all('/config/*', common.checkLogin);
 
 // Add a new connection config
 router.post('/config/add_config', (req, res) => {

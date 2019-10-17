@@ -1,12 +1,6 @@
 const express = require('express');
 
 const router = express.Router();
-const common = require('./common.server.controller');
-
-// runs on all routes and checks password if one is setup
-router.all('/users/*', common.checkLogin, (req, res, next) => {
-  next();
-});
 
 // Creates a new user
 router.post('/users/:conn/:db/user_create', (req, res) => {

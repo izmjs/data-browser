@@ -6,13 +6,6 @@ const mongodbRestore = require('mongodb-restore');
 const router = express.Router();
 const path = require('path');
 
-const common = require('./common.server.controller');
-
-// runs on all routes and checks password if one is setup
-router.all('/db/*', common.checkLogin, (req, res, next) => {
-  next();
-});
-
 // create a new database
 router.post('/database/:conn/db_create', (req, res) => {
   const connection_list = req.app.locals.dbConnections;

@@ -1,10 +1,28 @@
 {
-  "EXAMPLE_KEY": {
-    "name": "An example key for the module \"data-browser\"",
-    "defaultValue": "",
+  "ADD_IAM_TO_GUEST": {
+    "name": "Add \"modules:data-browser\" IAM to guest",
+    "defaultValue": true,
     "scope": "data-browser",
     "schema": {
-      "type": "string"
+      "type": "boolean"
+    }
+  },
+  "MONITORING_ENABLE": {
+    "name": "Enable the monitoring",
+    "defaultValue": true,
+    "scope": "data-browser",
+    "description": "It will bootstrap an interval where it will put the monitoring data into a nedb file",
+    "schema": {
+      "type": "boolean"
+    }
+  },
+  "MONITORING_INTERVAL": {
+    "name": "Monitoring interval (in ms)",
+    "defaultValue": 30000,
+    "scope": "data-browser",
+    "description": "The time to take before filling the cache (nedb) database",
+    "schema": {
+      "type": "number"
     }
   }
 }

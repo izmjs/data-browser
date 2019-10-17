@@ -1,22 +1,10 @@
 const express = require('express');
 const MongoURI = require('mongo-uri');
-const _ = require('lodash');
 
 const router = express.Router();
 
 const common = require('./common.server.controller');
 const bsonify = require('./bsonify.server.controller');
-
-// runs on all routes and checks password if one is setup
-router.all('/*', common.checkLogin);
-
-// redirect to "/app" on home route
-router.all('/', common.checkLogin, (req, res) => {
-  res.redirect(`${req.app_context}/app/`);
-});
-
-// runs on all routes and checks password if one is setup
-router.all('/app/*', common.checkLogin);
 
 // the home route
 router.get('/app/', (req, res) => {
@@ -433,30 +421,31 @@ router.get('/app/:conn/:db/:coll/edit/:doc_id', (req, res) => {
       }
 
       const images = [];
-      _.forOwn(result.doc, (value, key) => {
-        if (value) {
-          if (value.toString().substring(0, 10) === 'data:image') {
-            images.push({ field: key, src: value });
-          }
-        }
-      });
-
       const videos = [];
-      _.forOwn(result.doc, (value, key) => {
-        if (value) {
-          if (value.toString().substring(0, 10) === 'data:video') {
-            videos.push({ field: key, src: value, type: value.split(';')[0].replace('data:', '') });
-          }
-        }
-      });
-
       const audio = [];
-      _.forOwn(result.doc, (value, key) => {
-        if (value) {
-          if (value.toString().substring(0, 10) === 'data:audio') {
-            audio.push({ field: key, src: value });
-          }
+
+      Object.keys(result.doc).forEach((key) => {
+        if (!Object.prototype.hasOwnProperty.call(result.doc, key)) {
+          return null;
         }
+
+        const value = result.doc[key];
+
+        switch (true) {
+          case value.toString().substring(0, 10) === 'data:image':
+            images.push({ field: key, src: value });
+            break;
+          case value.toString().substring(0, 10) === 'data:video':
+            videos.push({ field: key, src: value });
+            break;
+          case value.toString().substring(0, 10) === 'data:audio':
+            audio.push({ field: key, src: value });
+            break;
+          default:
+            break;
+        }
+
+        return true;
       });
 
       res.render('coll-edit', {

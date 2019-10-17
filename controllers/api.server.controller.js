@@ -1,5 +1,10 @@
 const ejson = require('mongodb-extended-json');
 
+/**
+ * Calculate the average of a list of datapoints
+ * @param {Array<Object>} datapoints List of datapoints
+ * @param {Number} limit Number of records to return
+ */
 function averageDatapoints(datapoints, limit) {
   if (limit >= datapoints.length) {
     return datapoints;
@@ -48,32 +53,26 @@ function averageDatapoints(datapoints, limit) {
   return result;
 }
 
-// pagination API
+/**
+ * pagination API
+ * @controller paginate
+ * @param {IncommingMessage} req The request
+ * @param {OutcommingMessage} res The response
+ * @param {Function} next Go to the next middleware
+ */
 exports.paginate = function paginate(req, res) {
-  const connection_list = req.app.locals.dbConnections;
-
   const docs_per_page = parseInt(req.body.docsPerPage, 10) !== undefined
     ? parseInt(req.body.docsPerPage, 10)
     : 5;
 
-  // Check for existance of connection
-  if (connection_list[req.params.conn] === undefined) {
-    res.status(400).json({ msg: req.t('Invalid connection name') });
-  }
-
-  // Validate database name
-  if (req.params.db.indexOf(' ') > -1) {
-    res.status(400).json({ msg: req.t('Invalid database name') });
-  }
-
   // Get DB's form pool
-  const mongo_db = connection_list[req.params.conn].native.db(req.params.db);
+  const mongo_db = req.params.db;
 
   const page_size = docs_per_page;
   let page = 1;
 
-  if (req.params.page !== undefined) {
-    page = parseInt(req.params.page, 10);
+  if (req.query.page !== undefined) {
+    page = parseInt(req.query.page, 10);
   }
 
   let skip = 0;
@@ -96,43 +95,48 @@ exports.paginate = function paginate(req, res) {
     }
   }
 
-  mongo_db.collection(req.params.coll).find(query_obj, { skip, limit }).toArray((err, result) => {
-    if (err) {
-      console.error(err);
-      res.status(500).json(err);
-    } else {
-      mongo_db.collection(req.params.coll)
-        .find({}, { skip, limit })
-        .toArray((e, simpleSearchFields) => {
-        // get field names/keys of the Documents in collection
-          let fields = [];
-          simpleSearchFields.forEach((doc) => {
-            Object.keys(doc).forEach((key) => {
-              if (Object.prototype.hasOwnProperty.call(doc, key) && key !== '__v') {
-                fields.push(key);
-              }
+  mongo_db.collection(
+    req.params.collectionName,
+  ).find(query_obj, { skip, limit })
+    .toArray((err, result) => {
+      if (err) {
+        console.error(err);
+        res.status(500).json(err);
+      } else {
+        mongo_db.collection(req.params.collectionName)
+          .find({}, { skip, limit })
+          .toArray((e, simpleSearchFields) => {
+            // get field names/keys of the Documents in collection
+            let fields = [];
+            simpleSearchFields.forEach((doc) => {
+              Object.keys(doc).forEach((key) => {
+                if (Object.prototype.hasOwnProperty.call(doc, key) && key !== '__v') {
+                  fields.push(key);
+                }
+              });
             });
-          });
 
-          fields = fields.filter((item, pos) => fields.indexOf(item) === pos);
+            fields = fields.filter((item, pos) => fields.indexOf(item) === pos);
 
-          // get total num docs in query
-          mongo_db.collection(req.params.coll).count(query_obj, (err1, doc_count) => {
-            const return_data = {
-              data: result,
-              fields,
-              total_docs: doc_count,
-              deleteButton: req.t('Delete'),
-              linkButton: req.t('Link'),
-              editButton: req.t('Edit'),
-              validQuery,
-              queryMessage,
-            };
-            res.status(200).json(return_data);
+            // get total num docs in query
+            mongo_db
+              .collection(req.params.collectionName)
+              .estimatedDocumentCount(query_obj, (err1, doc_count) => {
+                const return_data = {
+                  data: result,
+                  fields,
+                  total_docs: doc_count,
+                  deleteButton: req.t('Delete'),
+                  linkButton: req.t('Link'),
+                  editButton: req.t('Edit'),
+                  validQuery,
+                  queryMessage,
+                };
+                res.status(200).json(return_data);
+              });
           });
-        });
-    }
-  });
+      }
+    });
 };
 
 /**
@@ -147,7 +151,6 @@ exports.monitoring = function monitoring(req, res) {
   dayBack.setDate(dayBack.getDate() - 1);
 
   req.db.find({
-    connectionName: req.params.conn,
     eventDate: {
       $gte: dayBack,
     },
