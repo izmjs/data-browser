@@ -7,7 +7,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="google" content="notranslate" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>adminMongo</title>
+  <title>IZM.js DataBrowser</title>
   <link rel='stylesheet' type='text/css' href='{{app_context}}/bootstrap/css/bootstrap.min.css' />
   <link rel='stylesheet' type='text/css' href='{{app_context}}/css/flatly.bootstrap.min.css' />
   <link rel="stylesheet" type='text/css' href='{{app_context}}/css/highlightjs.github.min.css'>
@@ -16,19 +16,19 @@
   <script>if (typeof module === 'object') { window.module = module; module = undefined; }</script>
   <script src="{{app_context}}/jquery/jquery.min.js"></script>
   <script src="{{app_context}}/bootstrap/js/bootstrap.min.js"></script>
-  {{#if paginate}}
+  {% if paginate %}
   <script src="{{app_context}}/js/jquery.bootpag.min.js"></script>
-  {{/if}}
-  {{#if editor}}
+  {% endif %}
+  {% if editor %}
   <script src="{{app_context}}/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
   <script src="{{app_context}}/js/toEJSON.js"></script>
   <script src="{{app_context}}/js/editor.js"></script>
-  {{/if}}
-  {{#if monitoring}}
+  {% endif %}
+  {% if monitoring %}
   <script src="{{app_context}}/js/moment.min.js"></script>
   <script src="{{app_context}}/js/chart.min.js"></script>
   <script src="{{app_context}}/js/servermonitoring.js"></script>
-  {{/if}}
+  {% endif %}
   <script src="{{app_context}}/js/adminMongo.js"></script>
   <script src="{{app_context}}/js/highlight.min.js"></script>
   <script>if (window.module) module = window.module;</script>
@@ -37,7 +37,7 @@
 <body>
   <div class="container-fluid wrapper">
     <div class="row row-offcanvas row-offcanvas-left">
-      {{#if sidebar_list}}
+      {% if sidebar_list %}
       <div id="sidebar" class="column no-side-pad hidden-xs col-xs-12 col-sm-3 col-lg-2 sidebar-offcanvas">
         <div class="row">
           <div class="col-lg-12 no-pad-left no-pad-right">
@@ -50,10 +50,10 @@
           <div class="col-lg-12 no-pad-left no-pad-right">
             <ul class="list-group">
               <li class="list-group-item list-group-item-primary">{{__ "Database Objects"}}</li>
-              {{#if conn_name}}
+              {% if conn_name %}
               <li class="list-group-item"><i class="fa fa-plug"></i>&nbsp;<a
                   href="{{app_context}}/app/{{conn_name}}">{{conn_name}}</a></li>
-              {{/if}}
+              {% endif %}
               {{#each sidebar_list}}
               <li class="list-group-item mainMenu"><i class="fa fa-database"></i>&nbsp; <a
                   href="{{app_context}}/app/{{@root.conn_name}}/{{@key}}">{{@key}}</a>
@@ -77,8 +77,8 @@
           </div>
         </div>
       </div>
-      {{/if}}
-      {{#ifOr monitoring connection_list}}
+      {% endif %}
+      {% ifOr monitoring connection_list %}
       <div class="col-md-12 col-lg-12" id="main">
         {{else}}
         <div class="column col-xs-12 col-sm-9 col-lg-10" id="main">
@@ -92,14 +92,14 @@
               <span class="icon-bar"></span>
             </button>
             <div class="container-fluid no-pad-left">
-              {{#ifOr monitoring connection_list}}
+              {% ifOr monitoring connection_list %}
               <div class="navbar-left no-pad-left no-pad-right">
                 <div class="navTitle navTitleDark">
                   <a href="{{app_context}}/app"><img src="{{app_context}}/static/logo.png">adminMongo</a>
                 </div>
               </div>
               {{/ifOr}}
-              {{#ifNotOr monitoring connection_list}}
+              {% ifNotOr monitoring connection_list %}
               <div class="navbar-left no-pad-left no-pad-right">
                 <button type="button" id="sidebarToggle" class="btn btn-success btn-sm pull-left"><i class="fa fa-bars"
                     aria-hidden="true"></i></button>
@@ -108,28 +108,28 @@
               <ul class="nav navbar-nav navbar-right">
                 <div id="navbar" class="navbar-collapse collapse">
                   <ul class="nav navbar-nav">
-                    {{#if conn_name}}
+                    {% if conn_name %}
                     <li><a href="{{app_context}}/app/monitoring/{{conn_name}}"><i class="fa fa-desktop"></i>&nbsp;
                         {{__ "Monitoring"}}</a></li>
-                    {{/if}}
+                    {% endif %}
                     <li><a href="{{app_context}}/app/connection_list"><i class="fa fa-plug"></i>&nbsp;
                         {{__ "Connections"}}</a></li>
-                    {{#if session.loggedIn}}
+                    {% if session.loggedIn %}
                     <li><a href="{{app_context}}/app/logout"><i class="fa fa-sign-out"></i>&nbsp;
                         {{__ "Logout"}}</a></li>
-                    {{/if}}
+                    {% endif %}
                   </ul>
-                </div </ul> </div> </nav> {{#unless monitoring}} {{#if conn_name}} <div class="row">
+                </div </ul> </div> </nav> {{#unless monitoring}} {% if conn_name}} <div class="row %>
                 <div class="col-lg-12">
                   <h3 class="text-center banner-heading">
                     {{__ "Database"}}:
-                    {{#if db_name}}
+                    {% if db_name %}
                     <a href="{{app_context}}/app/{{conn_name}}/{{db_name}}">{{db_name}}</a>
                     {{else}}
                     <span class="text-warning"><i>{{__ "Not selected"}}</i></span>
-                    {{/if}}
+                    {% endif %}
                     / {{__ "Collection"}} -
-                    {{#if coll_name}}
+                    {% if coll_name %}
                     <span id="headCollectionName" class="text-info">{{coll_name}}</span>
                     <button type="button" class="btn btn-success btn-xs" data-toggle="modal"
                       data-target="#collectioName">
@@ -137,11 +137,11 @@
                     </button>
                     {{else}}
                     <span class="text-warning"><i>{{__ "Not selected"}}</i></span>
-                    {{/if}}
+                    {% endif %}
                   </h3>
                 </div>
             </div>
-            {{/if}}
+            {% endif %}
             {{/unless}}
             {{{body}}}
         </div>
