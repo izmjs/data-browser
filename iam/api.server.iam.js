@@ -7,6 +7,21 @@ const commonCtrl = require('../controllers/common.server.controller');
 module.exports = {
   prefix: '/dbrowser/api',
   routes: [{
+    path: '/monitoring',
+    methods: {
+      get: {
+        iam: 'modules:data-browser:api:monitoring',
+        title: 'Database monitor',
+        groups: [],
+        parents: ['modules:data-browser', 'modules:data-browser:api'],
+        description: 'Get database statistics',
+        middlewares: [
+          commonCtrl.init,
+          ctrls.monitoring,
+        ],
+      },
+    },
+  }, {
     path: '/:collectionName',
     methods: {
       /**
@@ -32,21 +47,6 @@ module.exports = {
         middlewares: [
           commonCtrl.init,
           ctrls.paginate,
-        ],
-      },
-    },
-  }, {
-    path: '/dbrowser/monitoring',
-    methods: {
-      get: {
-        iam: 'modules:data-browser:api:monitoring',
-        title: 'Database monitor',
-        groups: [],
-        parents: ['modules:data-browser', 'modules:data-browser:api'],
-        description: 'Get database statistics',
-        middlewares: [
-          commonCtrl.init,
-          ctrls.monitoring,
         ],
       },
     },

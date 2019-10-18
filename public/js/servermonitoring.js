@@ -10,7 +10,7 @@ $(document).ready(function () {
   function renderCharts() {
     $.ajax({
       method: 'GET',
-      url: $('#app_context').val() + '/api/monitoring/' + $('#conn_name').val(),
+      url: '/api/v1/dbrowser/api/monitoring',
       data: {}
     })
       .done(function (result) {

@@ -52,7 +52,9 @@
   },
   "dependencies": {
     "async": "^3.1.0",
+    "express-handlebars": "^3.1.0",
     "junk": "^3.1.0",
+    "moment": "^2.24.0",
     "mongo-uri": "^0.1.2",
     "mongodb": "^3.3.3",
     "mongodb-backup": "^1.6.9",
