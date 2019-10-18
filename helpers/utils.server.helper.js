@@ -52,6 +52,7 @@ exports.render = async (req, res, template, data) => {
   handlebars.renderView(join(viewsDir, `${template}.server.view.hbs`), {
     ...data,
     __: req.t,
+    conn_name: req.t('Connection'),
   }, (err, html) => {
     if (err) {
       console.error(err);

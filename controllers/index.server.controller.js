@@ -22,7 +22,6 @@ exports.monitoring = async function monitoring(req, res) {
   render(req, res, 'monitoring', {
     message: monitoringMessage,
     monitoring: monitoringRequired,
-    conn_name: req.params.conn,
   });
 };
 
