@@ -1,12 +1,14 @@
-const express = require('express');
 const MongoURI = require('mongo-uri');
+const connPool = require('./connections.server.controller');
 
-const router = express.Router();
-
-const connPool = {};
-
-// Add a new connection config
-router.post('/config/add_config', (req, res) => {
+/**
+ * Add a new connection config
+ * @controller Add Config
+ * @param {IncommingMessage} req The request
+ * @param {OutcommingMessage} res The response
+ * @param {Function} next Go to the next middleware
+ */
+exports.add = function add(req, res) {
   const nconf = req.nconf.connections;
   const connection_list = req.nconf.connections.get('connections');
 
@@ -59,10 +61,16 @@ router.post('/config/add_config', (req, res) => {
     console.error(`Config error: ${err}`);
     res.status(400).json({ msg: `${req.t('Config error')}: ${err}` });
   }
-});
+};
 
-// Updates an existing connection config
-router.post('/config/update_config', (req, res) => {
+/**
+ * Updates an existing connection config
+ * @controller Update
+ * @param {IncommingMessage} req The request
+ * @param {OutcommingMessage} res The response
+ * @param {Function} next Go to the next middleware
+ */
+exports.update = function update(req, res) {
   const nconf = req.nconf.connections;
 
   // try parse uri string. If pass, add, else throw an error
@@ -105,10 +113,10 @@ router.post('/config/update_config', (req, res) => {
     console.error(`Config error: ${err}`);
     res.status(400).json({ msg: `${req.t('Config error')}: ${err}` });
   }
-});
+};
 
 // Drops an existing connection config
-router.post('/config/drop_config', (req, res) => {
+exports.drop = function drop(req, res) {
   const nconf = req.nconf.connections;
 
   // delete current config
@@ -124,6 +132,4 @@ router.post('/config/drop_config', (req, res) => {
       res.status(200).json({ msg: req.t('Config successfully deleted') });
     }
   });
-});
-
-module.exports = router;
+};

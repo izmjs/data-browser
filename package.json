@@ -58,6 +58,7 @@
     "mongodb-backup": "^1.6.9",
     "mongodb-extended-json": "^1.10.2",
     "mongodb-restore": "^1.6.2",
+    "nconf": "^0.10.0",
     "nedb": "^1.8.0"
   }
 }

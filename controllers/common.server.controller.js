@@ -5,6 +5,7 @@ const { ObjectID } = require('mongodb');
 const Datastore = require('nedb');
 const mongoose = require('mongoose');
 const { join } = require('path');
+const nconf = require('nconf');
 
 // setup DB for server stats
 
@@ -21,6 +22,7 @@ const db = new Datastore({
  * @param {Function} next Go to the next middleware
  */
 exports.init = async function init(req, res, next) {
+  req.nconf = nconf.stores;
   req.db = db;
   req.params.conn = mongoose.connection;
   req.params.db = mongoose.connection.db;
