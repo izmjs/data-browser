@@ -8,6 +8,21 @@ module.exports = {
   is_global: true,
   prefix: '/dbrowser/app',
   routes: [{
+    path: '/',
+    methods: {
+      get: {
+        iam: 'modules:data-browser:app:home',
+        title: 'Home page',
+        groups: [],
+        parents: ['modules:data-browser', 'modules:data-browser:app'],
+        description: 'The base connection route showing all DB\'s for connection',
+        middlewares: [
+          commonCtrls.init,
+          ctrls.home,
+        ],
+      },
+    },
+  }, {
     path: '/monitoring',
     methods: {
       get: {
