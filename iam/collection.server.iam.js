@@ -7,12 +7,12 @@ const commonCtrls = require('../controllers/common.server.controller');
 module.exports = {
   prefix: '/dbrowser/collection',
   routes: [{
-    path: '/coll_create',
+    path: '/:dbName/coll_create',
     methods: {
       /**
        * @body
        * {
-       *   "collection_name": "todos"
+       *   "collection_name": "{{collectionName}}"
        * }
        */
       post: {
@@ -28,12 +28,12 @@ module.exports = {
       },
     },
   }, {
-    path: '/:collectionName/coll_name_edit',
+    path: '/:dbName/:collectionName/coll_name_edit',
     methods: {
       /**
        * @body
        * {
-       *   "new_collection_name": "tasks"
+       *   "new_collection_name": "{{collectionName}}"
        * }
        */
       post: {
@@ -49,12 +49,12 @@ module.exports = {
       },
     },
   }, {
-    path: '/coll_delete',
+    path: '/:dbName/coll_delete',
     methods: {
       /**
        * @body
        * {
-       *   "collection_name": "tasks"
+       *   "collection_name": "{{collectionName}}"
        * }
        */
       post: {
@@ -70,7 +70,7 @@ module.exports = {
       },
     },
   }, {
-    path: '/:collectionName/export',
+    path: '/:dbName/:collectionName/export',
     methods: {
       /**
        * @params
@@ -84,7 +84,10 @@ module.exports = {
         iam: 'modules:data-browser:collection:export',
         title: 'Export collection',
         groups: [],
-        parents: ['modules:data-browser:collection', 'modules:data-browser:collection'],
+        parents: [
+          'modules:data-browser',
+          'modules:data-browser:collection',
+        ],
         description: 'Export an existing collection',
         middlewares: [
           commonCtrls.init,
@@ -93,7 +96,7 @@ module.exports = {
       },
     },
   }, {
-    path: '/:collectionName/create_index',
+    path: '/:dbName/:collectionName/create_index',
     methods: {
       /**
        * @body
@@ -116,7 +119,7 @@ module.exports = {
       },
     },
   }, {
-    path: '/:collectionName/drop_index',
+    path: '/:dbName/:collectionName/drop_index',
     methods: {
       /**
        * @body

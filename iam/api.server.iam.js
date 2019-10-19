@@ -22,7 +22,7 @@ module.exports = {
       },
     },
   }, {
-    path: '/:collectionName',
+    path: '/:dbName/:collectionName',
     methods: {
       /**
        * @params

@@ -8,7 +8,13 @@ const common = require('./common.server.controller');
  * @param {Function} next Go to the next middleware
  */
 exports.create = async function create(req, res) {
-  const mongo_db = req.params.db;
+  // Validate database name
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
+  }
+
+  // Get DB's form pool
+  const mongo_db = req.params.conn.useDb(req.params.dbName);
 
   // adding a new collection
   mongo_db.createCollection(req.body.collection_name, (err) => {
@@ -29,7 +35,15 @@ exports.create = async function create(req, res) {
  * @param {Function} next Go to the next middleware
  */
 exports.rename = async function rename(req, res) {
-  const { db: mongo_db, collectionName } = req.params;
+  // Validate database name
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
+  }
+
+  // Get DB's form pool
+  const mongo_db = req.params.conn.useDb(req.params.dbName);
+
+  const { collectionName } = req.params;
   const { new_collection_name } = req.body;
 
   // change a collection name
@@ -57,7 +71,13 @@ exports.rename = async function rename(req, res) {
  * @param {Function} next Go to the next middleware
  */
 exports.remove = async function remove(req, res) {
-  const mongo_db = req.params.db;
+  // Validate database name
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
+  }
+
+  // Get DB's form pool
+  const mongo_db = req.params.conn.useDb(req.params.dbName);
 
   // delete a collection
   mongo_db.dropCollection(req.body.collection_name, (err) => {
@@ -84,8 +104,13 @@ exports.exportCollection = async function exportCollection(req, res) {
     exportID = { _id: 0 };
   }
 
+  // Validate database name
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
+  }
+
   // Get DB's form pool
-  const mongo_db = req.params.db;
+  const mongo_db = req.params.conn.useDb(req.params.dbName);
 
   mongo_db.collection(req.params.collectionName).find({}, exportID).toArray((err, data) => {
     if (data !== '') {
@@ -105,7 +130,13 @@ exports.exportCollection = async function exportCollection(req, res) {
  * @param {Function} next Go to the next middleware
  */
 exports.createIndex = async function createIndex(req, res) {
-  const mongo_db = req.params.db;
+  // Validate database name
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
+  }
+
+  // Get DB's form pool
+  const mongo_db = req.params.conn.useDb(req.params.dbName);
   let indexData = {};
 
   try {
@@ -142,7 +173,13 @@ exports.createIndex = async function createIndex(req, res) {
  * @param {Function} next Go to the next middleware
  */
 exports.dropIndex = async function dropIndex(req, res) {
-  const mongo_db = req.params.db;
+  // Validate database name
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
+  }
+
+  // Get DB's form pool
+  const mongo_db = req.params.conn.useDb(req.params.dbName);
 
   // adding a new index
   mongo_db.collection(req.params.collectionName).indexes((err, indexes) => {

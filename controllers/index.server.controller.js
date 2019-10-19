@@ -1,9 +1,13 @@
 const MongoURI = require('mongo-uri');
+const { resolve } = require('path');
 
 const common = require('./common.server.controller');
 const bsonify = require('./bsonify.server.controller');
 
 const { render } = require('../helpers/utils.server.helper');
+
+// eslint-disable-next-line import/no-dynamic-require
+const { uri: conn_string } = require(resolve('config')).db;
 
 /**
  * Show server monitoring
@@ -32,47 +36,36 @@ exports.monitoring = async function monitoring(req, res) {
  * @param {Function} next Go to the next middleware
  */
 exports.home = async function home(req, res) {
-  const connection_list = req.app.locals.dbConnections;
-
-  // if no connection found
-  if (!connection_list || Object.keys(connection_list).length === 0) {
-    res.redirect(`${req.app_context}/app`);
-    return;
-  }
-
-  // Check for existance of connection
-  if (connection_list[req.params.conn] === undefined) {
-    common.render_error(res, req, req.t('Invalid connection name'), req.params.conn);
-    return;
-  }
-
   // parse the connection string to get DB
-  const conn_string = connection_list[req.params.conn].connString;
   const uri = MongoURI.parse(conn_string);
+  const dbUri = req.params.dbName || uri.database;
 
   // If there is a DB in the connection string, we redirect to the DB level
-  if (uri.database) {
-    res.redirect(`${req.app_context}/app/${req.params.conn}/${uri.database}`);
+  if (uri.database && !req.params.dbName) {
+    res.redirect(`./app/${uri.database}`);
     return;
+  }
+
+  // Validate database name
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
   }
 
   // Get DB's form pool
   const mongo_db = req.params.db;
+  const mongo_conn = req.params.conn;
 
   common.get_db_status(mongo_db, (e1, db_status) => {
     common.get_backups((e2, backup_list) => {
-      common.get_db_stats(mongo_db, uri.database, (e3, db_stats) => {
-        common.get_sidebar_list(mongo_db, uri.database, (e4, sidebar_list) => {
+      common.get_db_stats(mongo_conn, dbUri, (e3, db_stats) => {
+        common.get_sidebar_list(mongo_conn, dbUri, (e4, sidebar_list) => {
           common.get_db_list(uri, mongo_db, (e5, db_list) => {
-            res.render('conn', {
-              conn_list: common.order_object(connection_list),
+            render(req, res, 'conn', {
               db_stats,
               db_status,
-              conn_name: req.params.conn,
               sidebar_list,
               db_list,
               backup_list,
-              helpers: req.handlebars.helpers,
               session: req.session,
             });
           });

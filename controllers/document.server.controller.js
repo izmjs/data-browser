@@ -11,7 +11,13 @@ const common = require('./common.server.controller');
  * @param {Function} next Go to the next middleware
  */
 exports.insert_doc = (req, res) => {
-  const mongo_db = req.params.db;
+  // Validate database name
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
+  }
+
+  // Get DB's form pool
+  const mongo_db = req.params.conn.useDb(req.params.dbName);
   let eJsonData;
 
   try {
@@ -62,7 +68,13 @@ exports.insert_doc = (req, res) => {
  * @param {Function} next Go to the next middleware
  */
 exports.edit_doc = (req, res) => {
-  const mongo_db = req.params.db;
+  // Validate database name
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
+  }
+
+  // Get DB's form pool
+  const mongo_db = req.params.conn.useDb(req.params.dbName);
   let eJsonData;
 
   try {
@@ -105,7 +117,13 @@ exports.mass_delete = (req, res) => {
     }
   }
 
-  const mongo_db = req.params.db;
+  // Validate database name
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
+  }
+
+  // Get DB's form pool
+  const mongo_db = req.params.conn.useDb(req.params.dbName);
 
   if (validQuery) {
     mongo_db.collection(req.params.collectionName).remove(query_obj, true, (err, docs) => {
@@ -129,7 +147,13 @@ exports.mass_delete = (req, res) => {
  * @param {Function} next Go to the next middleware
  */
 exports.doc_delete = (req, res) => {
-  const mongo_db = req.params.db;
+  // Validate database name
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
+  }
+
+  // Get DB's form pool
+  const mongo_db = req.params.conn.useDb(req.params.dbName);
   common.get_id_type(mongo_db, req.params.collectionName, req.body.doc_id, (err, result) => {
     if (result.doc) {
       mongo_db

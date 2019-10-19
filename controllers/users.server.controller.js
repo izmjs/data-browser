@@ -6,7 +6,13 @@
  * @param {Function} next Go to the next middleware
  */
 exports.user_create = (req, res) => {
-  const mongo_db = req.params.db;
+  // Validate database name
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
+  }
+
+  // Get DB's form pool
+  const mongo_db = req.params.conn.useDb(req.params.dbName);
 
   // do DB stuff
   const roles = req.body.roles_text ? req.body.roles_text.split(/\s*,\s*/) : [];
@@ -30,7 +36,13 @@ exports.user_create = (req, res) => {
  * @param {Function} next Go to the next middleware
  */
 exports.user_delete = (req, res) => {
-  const mongo_db = req.params.db;
+  // Validate database name
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
+  }
+
+  // Get DB's form pool
+  const mongo_db = req.params.conn.useDb(req.params.dbName);
 
   // remove a user
   mongo_db.removeUser(req.body.username, (err) => {

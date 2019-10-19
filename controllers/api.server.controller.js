@@ -65,8 +65,13 @@ exports.paginate = function paginate(req, res) {
     ? parseInt(req.body.docsPerPage, 10)
     : 5;
 
+  // Validate database name
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
+  }
+
   // Get DB's form pool
-  const mongo_db = req.params.db;
+  const mongo_db = req.params.conn.useDb(req.params.dbName);
 
   const page_size = docs_per_page;
   let page = 1;

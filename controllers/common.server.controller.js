@@ -75,10 +75,10 @@ exports.get_db_stats = function get_db_stats(mongo_db, db_name, cb) {
           const skipped_dbs = ['null', 'admin', 'local'];
           if (skipped_dbs.indexOf(value.name) === -1) {
             const tempDBName = value.name;
-            mongo_db.db(tempDBName).listCollections().toArray((e1, coll_list) => {
+            mongo_db.useDb(tempDBName).db.listCollections().toArray((e1, coll_list) => {
               const coll_obj = {};
               async.forEachOf(exports.cleanCollections(coll_list), (v1, k1, cb1) => {
-                mongo_db.db(tempDBName).collection(v1).stats((e4, coll_stat) => {
+                mongo_db.useDb(tempDBName).db.collection(v1).stats((e4, coll_stat) => {
                   coll_obj[v1] = { Storage: coll_stat.size, Documents: coll_stat.count };
                   cb1();
                 });
@@ -104,10 +104,10 @@ exports.get_db_stats = function get_db_stats(mongo_db, db_name, cb) {
     });
     // if at DB level, we just grab the collections below
   } else {
-    mongo_db.db(db_name).listCollections().toArray((err, coll_list) => {
+    mongo_db.useDb(db_name).db.listCollections().toArray((err, coll_list) => {
       const coll_obj = {};
       async.forEachOf(exports.cleanCollections(coll_list), (value, key, callback) => {
-        mongo_db.db(db_name).collection(value).stats((e1, coll_stat) => {
+        mongo_db.useDb(db_name).db.collection(value).stats((e1, coll_stat) => {
           coll_obj[value] = {
             Storage: coll_stat ? coll_stat.size : 0,
             Documents: coll_stat ? coll_stat.count : 0,
@@ -212,7 +212,7 @@ exports.get_sidebar_list = function get_sidebar_list(mongo_db, db_name, cb) {
         async.forEachOf(db_list.databases, (value, key, callback) => {
           const skipped_dbs = ['null', 'admin', 'local'];
           if (skipped_dbs.indexOf(value.name) === -1) {
-            mongo_db.db(value.name).listCollections().toArray((e1, collections) => {
+            mongo_db.useDb(value.name).db.listCollections().toArray((e1, collections) => {
               const list = exports.cleanCollections(collections);
               exports.order_array(list);
               db_obj[value.name] = list;
@@ -230,7 +230,7 @@ exports.get_sidebar_list = function get_sidebar_list(mongo_db, db_name, cb) {
       }
     });
   } else {
-    mongo_db.db(db_name).listCollections().toArray((err, collections) => {
+    mongo_db.useDb(db_name).db.listCollections().toArray((err, collections) => {
       const list = exports.cleanCollections(collections);
       exports.order_array(list);
       db_obj[db_name] = list;

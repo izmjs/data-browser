@@ -51,7 +51,10 @@ const handlebars = expressHandlebars.create({
 exports.render = async (req, res, template, data) => {
   handlebars.renderView(join(viewsDir, `${template}.server.view.hbs`), {
     ...data,
-    __: req.t,
+    helpers: {
+      ...handlebars.helpers,
+      __: req.t,
+    },
     conn_name: req.t('Connection'),
   }, (err, html) => {
     if (err) {

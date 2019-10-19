@@ -7,7 +7,7 @@ const commonCtrls = require('../controllers/common.server.controller');
 module.exports = {
   prefix: '/dbrowser/document',
   routes: [{
-    path: '/:collectionName/insert_doc',
+    path: '/:dbName/:collectionName/insert_doc',
     methods: {
       /**
        * @body
@@ -35,7 +35,7 @@ module.exports = {
       },
     },
   }, {
-    path: '/:collectionName/edit_doc',
+    path: '/:dbName/:collectionName/edit_doc',
     methods: {
       /**
        * @body
@@ -63,7 +63,7 @@ module.exports = {
       },
     },
   }, {
-    path: '/:collectionName/mass_delete',
+    path: '/:dbName/:collectionName/mass_delete',
     methods: {
       /**
        * @body
@@ -84,7 +84,7 @@ module.exports = {
       },
     },
   }, {
-    path: '/:collectionName/doc_delete',
+    path: '/:dbName/:collectionName/doc_delete',
     methods: {
       /**
        * @body

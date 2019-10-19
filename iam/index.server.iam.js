@@ -15,7 +15,7 @@ module.exports = {
         title: 'Home page',
         groups: [],
         parents: ['modules:data-browser', 'modules:data-browser:app'],
-        description: 'The base connection route showing all DB\'s for connection',
+        description: 'The home page',
         middlewares: [
           commonCtrls.init,
           ctrls.home,
@@ -34,6 +34,21 @@ module.exports = {
         middlewares: [
           commonCtrls.init,
           ctrls.monitoring,
+        ],
+      },
+    },
+  }, {
+    path: '/:dbName',
+    methods: {
+      get: {
+        iam: 'modules:data-browser:app:db',
+        title: 'Database page',
+        groups: [],
+        parents: ['modules:data-browser', 'modules:data-browser:app'],
+        description: 'The base connection route showing all DB\'s for connection',
+        middlewares: [
+          commonCtrls.init,
+          ctrls.home,
         ],
       },
     },

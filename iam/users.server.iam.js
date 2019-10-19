@@ -7,7 +7,7 @@ const commonCtrls = require('../controllers/common.server.controller');
 module.exports = {
   prefix: '/dbrowser/users',
   routes: [{
-    path: '/user_create',
+    path: '/:dbName/user_create',
     methods: {
       /**
        * @body
@@ -30,7 +30,7 @@ module.exports = {
       },
     },
   }, {
-    path: '/user_delete',
+    path: '/:dbName/user_delete',
     methods: {
       /**
        * @body
