@@ -142,7 +142,7 @@ $(document).ready(function () {
     if (newCollName !== '') {
       $.ajax({
         method: 'POST',
-        url: $('#app_context').val() + '/collection' + '/' + $('#db_name').val() + '/' + $('#coll_name').val() + '/coll_name_edit',
+        url: `/api/v1${$('#app_context').val()}/collection/${$('#db_name').val()}/${$('#coll_name').val()}/coll_name_edit`,
         data: { 'new_collection_name': newCollName }
       })
         .done(function (data) {
@@ -180,11 +180,12 @@ $(document).ready(function () {
   });
 
   $(document).on('click', '#coll_delete', function () {
-    if (confirm('WARNING: Are you sure you want to delete this collection and all documents?') === true) {
+    var coll = $('#del_coll_name option:selected').text();
+    if (coll && confirm('WARNING: Are you sure you want to delete this collection and all documents?') === true) {
       $.ajax({
         method: 'POST',
-        url: $('#app_context').val() + '/collection' + '/' + $('#db_name').val() + '/coll_delete',
-        data: { 'collection_name': $('#del_coll_name option:selected').text() }
+        url: `/api/v1${$('#app_context').val()}/collection/${$('#db_name').val()}/coll_delete`,
+        data: { 'collection_name': coll }
       })
         .done(function (data) {
           $("#del_coll_name option:contains('" + data.coll_name + "')").remove();
@@ -251,7 +252,7 @@ $(document).ready(function () {
 
     $.ajax({
       method: 'POST',
-      url: $('#app_context').val() + '/users' + '/' + $('#db_name').val() + '/user_create',
+      url: `/api/v1${$('#app_context').val()}/users/${$('#db_name').val()}/user_create`,
       data: {
         'username': $('#new_username').val(),
         'user_password': $('#new_password').val(),
@@ -283,11 +284,12 @@ $(document).ready(function () {
   });
 
   $(document).on('click', '#user_delete', function () {
-    if (confirm('WARNING: Are you sure you want to delete this user?') === true) {
+    const u = $('#del_user_name option:selected').text();
+    if (u && confirm('WARNING: Are you sure you want to delete this user?') === true) {
       $.ajax({
         method: 'POST',
-        url: $('#app_context').val() + '/users' + '/' + $('#db_name').val() + '/user_delete',
-        data: { 'username': $('#del_user_name option:selected').text() }
+        url: `/api/v1${$('#app_context').val()}/users/${$('#db_name').val()}/user_delete`,
+        data: { 'username': u }
       })
         .done(function (data) {
           $("#del_user_name option:contains('" + $('#del_user_name option:selected').text() + "')").remove();

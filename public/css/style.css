@@ -55,6 +55,7 @@ html, body {
     left: 0;
     padding-left: 0;
     padding-right: 0;
+    padding-bottom: 30px;
 }
 
 .navbar-default{
