@@ -38,28 +38,16 @@ exports.monitoring = async function monitoring(req, res) {
 exports.home = async function home(req, res) {
   // parse the connection string to get DB
   const uri = MongoURI.parse(conn_string);
-  const dbUri = req.params.dbName || uri.database;
-
-  // If there is a DB in the connection string, we redirect to the DB level
-  if (uri.database && !req.params.dbName) {
-    res.redirect(`./app/${uri.database}`);
-    return;
-  }
-
-  // Validate database name
-  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
-    res.status(400).json({ msg: req.t('Invalid database name') });
-  }
+  const dbUri = uri.database;
 
   // Get DB's form pool
-  const mongo_db = req.params.db;
-  const mongo_conn = req.params.conn;
+  const mongo_db = req.params.conn;
 
-  common.get_db_status(mongo_db, (e1, db_status) => {
+  common.get_db_status(mongo_db.db, (e1, db_status) => {
     common.get_backups((e2, backup_list) => {
-      common.get_db_stats(mongo_conn, dbUri, (e3, db_stats) => {
-        common.get_sidebar_list(mongo_conn, dbUri, (e4, sidebar_list) => {
-          common.get_db_list({}, mongo_db, (e5, db_list) => {
+      common.get_db_stats(mongo_db, dbUri, (e3, db_stats) => {
+        common.get_sidebar_list(mongo_db, dbUri, (e4, sidebar_list) => {
+          common.get_db_list({}, mongo_db.db, (e5, db_list) => {
             render(req, res, 'conn', {
               conn_name: 'local',
               db_stats,
@@ -83,35 +71,26 @@ exports.home = async function home(req, res) {
  * @param {OutcommingMessage} res The response
  * @param {Function} next Go to the next middleware
  */
-exports.func_name = async function funcName(req, res) {
-  const connection_list = req.app.locals.dbConnections;
-
-  // Check for existance of connection
-  if (connection_list[req.params.conn] === undefined) {
-    common.render_error(res, req, req.t('Invalid connection name'), req.params.conn);
-    return;
-  }
-
+exports.dbHome = async function dbHome(req, res) {
   // Validate database name
-  if (req.params.db.indexOf(' ') > -1) {
-    common.render_error(res, req, req.t('Invalid database name'), req.params.conn);
-    return;
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
   }
   // Get DB's form pool
-  const mongo_db = connection_list[req.params.conn].native.db(req.params.db);
+  const mongo_db = req.params.conn;
+  const { db } = mongo_db.useDb(req.params.dbName);
 
   // do DB stuff
-  common.get_db_stats(mongo_db, req.params.db, (e1, db_stats) => {
-    common.get_sidebar_list(mongo_db, req.params.db, (e2, sidebar_list) => {
-      mongo_db.command({ usersInfo: 1 }, (e3, conn_users) => {
-        mongo_db.listCollections().toArray((e4, collection_list) => {
-          res.render('db', {
+  common.get_db_stats(mongo_db, req.params.dbName, (e1, db_stats) => {
+    common.get_sidebar_list(mongo_db, req.params.dbName, (e2, sidebar_list) => {
+      db.command({ usersInfo: 1 }, (e3, conn_users) => {
+        db.listCollections().toArray((e4, collection_list) => {
+          render(req, res, 'db', {
             conn_name: 'local',
-            conn_list: common.order_object(connection_list),
             db_stats,
             conn_users,
             coll_list: common.cleanCollections(collection_list),
-            db_name: req.params.db,
+            db_name: req.params.dbName,
             show_db_name: true,
             sidebar_list,
             session: req.session,
@@ -156,14 +135,6 @@ exports.view = async function view(req, res) {
     res.status(400).json({ msg: req.t('Invalid database name') });
   }
 
-  // let query;
-
-  // try {
-  //   query = JSON.parse(req.query.query);
-  // } catch(e) {
-  //   query = {};
-  // }
-
   // Get DB's form pool
   const mongo_db = req.params.conn;
 
@@ -205,40 +176,30 @@ exports.view = async function view(req, res) {
  * @param {OutcommingMessage} res The response
  * @param {Function} next Go to the next middleware
  */
-exports.func_name = async function funcName(req, res) {
-  const connection_list = req.app.locals.dbConnections;
-
-  // Check for existance of connection
-  if (connection_list[req.params.conn] === undefined) {
-    common.render_error(res, req, req.t('Invalid connection name'), req.params.conn);
-    return;
-  }
-
+exports.indexes = async function indexes(req, res) {
   // Validate database name
-  if (req.params.db.indexOf(' ') > -1) {
-    common.render_error(res, req, req.t('Invalid database name'), req.params.conn);
-    return;
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
   }
 
   // Get DB's form pool
-  const mongo_db = connection_list[req.params.conn].native.db(req.params.db);
+  const mongo_db = req.params.conn;
+  const { db } = mongo_db.useDb(req.params.dbName);
 
   // do DB stuff
-  mongo_db.listCollections().toArray((e1, collection_list) => {
+  db.listCollections().toArray((e1, collection_list) => {
     // clean up the collection list
     const cl = common.cleanCollections(collection_list);
-    mongo_db.collection(req.params.coll).indexes((e2, coll_indexes) => {
-      common.get_sidebar_list(mongo_db, req.params.db, (e3, sidebar_list) => {
-        if (cl.indexOf(req.params.coll) === -1) {
+    db.collection(req.params.collectionName).indexes((e2, coll_indexes) => {
+      common.get_sidebar_list(mongo_db, req.params.dbName, (e3, sidebar_list) => {
+        if (cl.indexOf(req.params.collectionName) === -1) {
           console.error('No collection found');
           common.render_error(res, req, 'Database or Collection does not exist', req.params.conn);
         } else {
-          res.render('coll-indexes', {
+          render(req, res, 'coll-indexes', {
             coll_indexes,
-            conn_list: common.order_object(connection_list),
-            conn_name: 'local',
-            db_name: req.params.db,
-            coll_name: req.params.coll,
+            db_name: req.params.dbName,
+            coll_name: req.params.collectionName,
             sidebar_list,
             editor: true,
             session: req.session,
@@ -255,39 +216,30 @@ exports.func_name = async function funcName(req, res) {
  * @param {OutcommingMessage} res The response
  * @param {Function} next Go to the next middleware
  */
-exports.func_name = async function funcName(req, res) {
-  const connection_list = req.app.locals.dbConnections;
-
-  // Check for existance of connection
-  if (connection_list[req.params.conn] === undefined) {
-    common.render_error(res, req, req.t('Invalid connection name'), req.params.conn);
-    return;
-  }
-
+exports.newDoc = async function newDoc(req, res) {
   // Validate database name
-  if (req.params.db.indexOf(' ') > -1) {
-    common.render_error(res, req, req.t('Invalid database name'), req.params.conn);
-    return;
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
   }
 
   // Get DB form pool
-  const mongo_db = connection_list[req.params.conn].native.db(req.params.db);
+  const mongo_db = req.params.conn;
+  const { db } = mongo_db.useDb(req.params.dbName);
 
   // do DB stuff
-  mongo_db.listCollections().toArray((e1, collection_list) => {
+  db.listCollections().toArray((e1, collection_list) => {
     // clean up the collection list
     const cl = common.cleanCollections(collection_list);
-    common.get_sidebar_list(mongo_db, req.params.db, (e2, sidebar_list) => {
-      if (cl.indexOf(req.params.coll) === -1) {
+    common.get_sidebar_list(mongo_db, req.params.dbName, (e2, sidebar_list) => {
+      if (cl.indexOf(req.params.collectionName) === -1) {
         console.error('No collection found');
         common.render_error(res, req, 'Database or Collection does not exist', req.params.conn);
       } else {
-        res.render('coll-new', {
+        render(req, res, 'coll-new', {
           conn_name: 'local',
-          conn_list: common.order_object(connection_list),
-          coll_name: req.params.coll,
+          coll_name: req.params.collectionName,
           sidebar_list,
-          db_name: req.params.db,
+          db_name: req.params.dbName,
           editor: true,
           session: req.session,
         });
@@ -302,51 +254,44 @@ exports.func_name = async function funcName(req, res) {
  * @param {OutcommingMessage} res The response
  * @param {Function} next Go to the next middleware
  */
-exports.func_name = async function funcName(req, res) {
-  const connection_list = req.app.locals.dbConnections;
+exports.showDoc = async function showDoc(req, res) {
   const docs_per_page = 5;
 
-  // Check for existance of connection
-  if (connection_list[req.params.conn] === undefined) {
-    common.render_error(res, req, req.t('Invalid connection name'), req.params.conn);
-    return;
-  }
-
   // Validate database name
-  if (req.params.db.indexOf(' ') > -1) {
-    common.render_error(res, req, req.t('Invalid database name'), req.params.conn);
-    return;
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
   }
 
-  // Get DB's form pool
-  const mongo_db = connection_list[req.params.conn].native.db(req.params.db);
+  // Get DB form pool
+  const mongo_db = req.params.conn;
+  const { db } = mongo_db.useDb(req.params.dbName);
 
   // do DB stuff
-  mongo_db.listCollections().toArray((e1, collection_list) => {
+  db.listCollections().toArray((e1, collection_list) => {
     // clean up the collection list
     const cl = common.cleanCollections(collection_list);
-    common.get_sidebar_list(mongo_db, req.params.db, (e2, sidebar_list) => {
-      mongo_db.db(req.params.db).collection(req.params.coll).count((e3, coll_count) => {
-        if (cl.indexOf(req.params.coll) === -1) {
-          common.render_error(res, req, 'Database or Collection does not exist', req.params.conn);
-        } else {
-          res.render('doc-view', {
-            conn_list: common.order_object(req.nconf.connections.get('connections')),
-            conn_name: 'local',
-            db_name: req.params.db,
-            coll_name: req.params.coll,
-            coll_count,
-            doc_id: req.params.id,
-            key_val: req.params.key_val,
-            value_val: req.params.value_val,
-            sidebar_list,
-            docs_per_page,
-            paginate: true,
-            editor: true,
-            session: req.session,
-          });
-        }
-      });
+    common.get_sidebar_list(mongo_db, req.params.dbName, (e2, sidebar_list) => {
+      db
+        .collection(req.params.collectionName)
+        .countDocuments((e3, coll_count) => {
+          if (cl.indexOf(req.params.collectionName) === -1) {
+            common.render_error(res, req, 'Database or Collection does not exist', req.params.conn);
+          } else {
+            render(req, res, 'doc-view', {
+              db_name: req.params.dbName,
+              coll_name: req.params.collectionName,
+              coll_count,
+              doc_id: req.params.documentId,
+              key_val: req.params.key_val,
+              value_val: req.params.value_val,
+              sidebar_list,
+              docs_per_page,
+              paginate: true,
+              editor: true,
+              session: req.session,
+            });
+          }
+        });
     });
   });
 };
@@ -357,27 +302,19 @@ exports.func_name = async function funcName(req, res) {
  * @param {OutcommingMessage} res The response
  * @param {Function} next Go to the next middleware
  */
-exports.func_name = async function funcName(req, res) {
-  const connection_list = req.app.locals.dbConnections;
-
-  // Check for existance of connection
-  if (connection_list[req.params.conn] === undefined) {
-    common.render_error(res, req, req.t('Invalid connection name'), req.params.conn);
-    return;
-  }
-
+exports.editDoc = async function editDoc(req, res) {
   // Validate database name
-  if (req.params.db.indexOf(' ') > -1) {
-    common.render_error(res, req, req.t('Invalid database name'), req.params.conn);
-    return;
+  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
   }
 
   // Get DB's form pool
-  const mongo_db = connection_list[req.params.conn].native.db(req.params.db);
+  const mongo_db = req.params.conn;
+  const { db } = mongo_db.useDb(req.params.dbName);
 
   // do DB stuff
-  common.get_sidebar_list(mongo_db, req.params.db, (e1, sidebar_list) => {
-    common.get_id_type(mongo_db, req.params.coll, req.params.doc_id, (e2, result) => {
+  common.get_sidebar_list(mongo_db, req.params.dbName, (e1, sidebar_list) => {
+    common.get_id_type(db, req.params.collectionName, req.params.documentId, (e2, result) => {
       if (result.doc === undefined) {
         console.error('No document found');
         common.render_error(res, req, req.t('Document not found'), req.params.conn);
@@ -417,12 +354,10 @@ exports.func_name = async function funcName(req, res) {
         return true;
       });
 
-      res.render('coll-edit', {
-        conn_name: 'local',
-        db_name: req.params.db,
-        conn_list: common.order_object(req.nconf.connections.get('connections')),
+      render(req, res, 'coll-edit', {
+        db_name: req.params.dbName,
         sidebar_list,
-        coll_name: req.params.coll,
+        coll_name: req.params.collectionName,
         coll_doc: bsonify.stringify(result.doc, null, '    '),
         editor: true,
         images_fields: images,

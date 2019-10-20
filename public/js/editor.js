@@ -14,7 +14,7 @@ $(document).ready(function () {
       $.ajax({
         method: 'POST',
         contentType: 'application/json',
-        url: $('#app_context').val() + '/document/' + $('#conn_name').val() + '/' + $('#db_name').val() + '/' + $('#coll_name').val() + '/' + $('#edit_request_type').val(),
+        url: `/api/v1${$('#app_context').val()}/document/${$('#db_name').val()}/${$('#coll_name').val()}/${$('#edit_request_type').val()}`,
         data: JSON.stringify({ 'objectData': ejson })
       })
         .done(function (data) {

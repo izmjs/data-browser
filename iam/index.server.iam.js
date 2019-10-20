@@ -38,6 +38,21 @@ module.exports = {
       },
     },
   }, {
+    path: '/:dbName/:collectionName/indexes',
+    methods: {
+      get: {
+        iam: 'modules:data-browser:app:collection:indexes',
+        title: 'List indexes',
+        groups: [],
+        parents: ['modules:data-browser', 'modules:data-browser:app'],
+        description: 'Show all indexes for collection',
+        middlewares: [
+          commonCtrls.init,
+          ctrls.indexes,
+        ],
+      },
+    },
+  }, {
     path: '/:dbName/:collectionName/view',
     methods: {
       get: {
@@ -53,6 +68,63 @@ module.exports = {
       },
     },
   }, {
+    path: '/:dbName/:collectionName/new',
+    methods: {
+      get: {
+        iam: 'modules:data-browser:app:collection:doc:new',
+        title: 'Create document',
+        groups: [],
+        parents: [
+          'modules:data-browser',
+          'modules:data-browser:app',
+          'modules:data-browser:app:doc',
+        ],
+        description: 'Create new document',
+        middlewares: [
+          commonCtrls.init,
+          ctrls.newDoc,
+        ],
+      },
+    },
+  }, {
+    path: '/:dbName/:collectionName/:documentId',
+    methods: {
+      get: {
+        iam: 'modules:data-browser:app:collection:doc:show',
+        title: 'Show document',
+        groups: [],
+        parents: [
+          'modules:data-browser',
+          'modules:data-browser:app',
+          'modules:data-browser:app:doc',
+        ],
+        description: 'Shows the document preview/pagination',
+        middlewares: [
+          commonCtrls.init,
+          ctrls.showDoc,
+        ],
+      },
+    },
+  }, {
+    path: '/:dbName/:collectionName/edit/:documentId',
+    methods: {
+      get: {
+        iam: 'modules:data-browser:app:collection:doc:edit',
+        title: 'Edit document',
+        groups: [],
+        parents: [
+          'modules:data-browser',
+          'modules:data-browser:app',
+          'modules:data-browser:app:doc',
+        ],
+        description: 'Edit an existing document',
+        middlewares: [
+          commonCtrls.init,
+          ctrls.editDoc,
+        ],
+      },
+    },
+  }, {
     path: '/:dbName',
     methods: {
       get: {
@@ -63,7 +135,7 @@ module.exports = {
         description: 'The base connection route showing all DB\'s for connection',
         middlewares: [
           commonCtrls.init,
-          ctrls.home,
+          ctrls.dbHome,
         ],
       },
     },

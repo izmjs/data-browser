@@ -1,9 +1,8 @@
 <ol class="breadcrumb">
   <li><a href="{{app_context}}/app">{{__ "Home"}}</a></li>
-  <li><a href="{{app_context}}/app/{{conn_name}}">{{conn_name}}</a>&nbsp;({{__ "connection"}})</li>
-  <li><a href="{{app_context}}/app/{{conn_name}}/{{db_name}}">{{db_name}}</a>&nbsp;({{__ "database"}})</li>
+  <li><a href="{{app_context}}/app/{{db_name}}">{{db_name}}</a>&nbsp;({{__ "database"}})</li>
   <li><a
-      href="{{app_context}}/app/{{conn_name}}/{{db_name}}/{{coll_name}}/view">{{coll_name}}</a>&nbsp;({{__ "collection"}})
+      href="{{app_context}}/app/{{db_name}}/{{coll_name}}/view">{{coll_name}}</a>&nbsp;({{__ "collection"}})
   </li>
 </ol>
 <div class="row">
@@ -11,9 +10,9 @@
     <div class="col-sm-12 col-md-3 col-lg-3 pad-bottom justifiedButtons no-pad-left">
       <div class="btn-group btn-group-justified" role="group" aria-label="...">
         <a class="btn btn-success btn-sm"
-          href="{{app_context}}/app/{{conn_name}}/{{db_name}}/{{coll_name}}/new">{{__ "New document"}}</a>
+          href="{{app_context}}/app/{{db_name}}/{{coll_name}}/new">{{__ "New document"}}</a>
         <a class="btn btn-info btn-sm"
-          href="{{app_context}}/app/{{conn_name}}/{{db_name}}/{{coll_name}}/indexes">{{__ "Indexes"}}</a>
+          href="{{app_context}}/app/{{db_name}}/{{coll_name}}/indexes">{{__ "Indexes"}}</a>
       </div>
     </div>
     <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 justifiedButtons">
