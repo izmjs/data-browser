@@ -49,6 +49,24 @@
             </div>
           </div>
         </div>
+        <div class="row">
+          <div class="col-lg-12 no-pad-left no-pad-right">
+            <ul class="list-group">
+              <li class="list-group-item list-group-item-primary">{{__ "Database Objects"}}</li>
+              {{#each sidebar_list}}
+              <li class="list-group-item mainMenu"><i class="fa fa-database"></i>&nbsp; <a
+                  href="{{app_context}}/app/{{@key}}">{{@key}}</a>
+                <div class="pull-right mainMenuToggle"><i class="fa fa-angle-down" aria-hidden="true"></i></div>
+              </li>
+              {{#each this}}
+              <li class="list-group-item coll_indent sub-menu">&nbsp;&nbsp;&nbsp;<i
+                  class="fa fa-table"></i>&nbsp;&nbsp;&nbsp;<a
+                  href="{{app_context}}/app/{{@../key}}/{{this}}/view">{{this}}</a></li>
+              {{/each}}
+              {{/each}}
+            </ul>
+          </div>
+        </div>
       </div>
       {{/if}}
       {{#ifOr monitoring connection_list}}

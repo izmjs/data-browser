@@ -72,6 +72,7 @@ exports.paginate = function paginate(req, res) {
 
   // Get DB's form pool
   const mongo_db = req.params.conn.useDb(req.params.dbName);
+  const { db } = mongo_db;
 
   const page_size = docs_per_page;
   let page = 1;
@@ -100,7 +101,7 @@ exports.paginate = function paginate(req, res) {
     }
   }
 
-  mongo_db.collection(
+  db.collection(
     req.params.collectionName,
   ).find(query_obj, { skip, limit })
     .toArray((err, result) => {
@@ -108,7 +109,7 @@ exports.paginate = function paginate(req, res) {
         console.error(err);
         res.status(500).json(err);
       } else {
-        mongo_db.collection(req.params.collectionName)
+        db.collection(req.params.collectionName)
           .find({}, { skip, limit })
           .toArray((e, simpleSearchFields) => {
             // get field names/keys of the Documents in collection
@@ -124,9 +125,9 @@ exports.paginate = function paginate(req, res) {
             fields = fields.filter((item, pos) => fields.indexOf(item) === pos);
 
             // get total num docs in query
-            mongo_db
+            db
               .collection(req.params.collectionName)
-              .estimatedDocumentCount(query_obj, (err1, doc_count) => {
+              .countDocuments(query_obj, (err1, doc_count) => {
                 const return_data = {
                   data: result,
                   fields,

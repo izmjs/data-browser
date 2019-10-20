@@ -6,6 +6,7 @@ const Datastore = require('nedb');
 const mongoose = require('mongoose');
 const { join } = require('path');
 const nconf = require('nconf');
+const { render } = require('../helpers/utils.server.helper');
 
 // setup DB for server stats
 
@@ -288,12 +289,11 @@ exports.render_error = function render_error(res, req, err, conn) {
     conn_string = connection_list[conn].connection_string;
   }
 
-  res.render('error', {
+  render(req, res, 'error', {
     message: err,
     conn,
     conn_string,
     connection_list: exports.order_object(connection_list),
-    helpers: req.handlebars.helpers,
   });
 };
 

@@ -38,6 +38,21 @@ module.exports = {
       },
     },
   }, {
+    path: '/:dbName/:collectionName/view',
+    methods: {
+      get: {
+        iam: 'modules:data-browser:app:collection:view',
+        title: 'Shows documents',
+        groups: [],
+        parents: ['modules:data-browser', 'modules:data-browser:app'],
+        description: 'Shows the document preview/pagination',
+        middlewares: [
+          commonCtrls.init,
+          ctrls.view,
+        ],
+      },
+    },
+  }, {
     path: '/:dbName',
     methods: {
       get: {

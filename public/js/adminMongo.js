@@ -409,8 +409,8 @@ function paginate() {
   }
 
   // add search to the API URL if it exists
-  var api_url = $('#app_context').val() + '/api/' + conn_name + '/' + db_name + '/' + coll_name + '/' + page_num;
-  var pager_href = $('#app_context').val() + '/app/' + conn_name + '/' + db_name + '/' + coll_name + '/view/{{number}}';
+  var api_url = `/api/v1${$('#app_context').val()}/api/${db_name}/${coll_name}?page=${page_num}`;
+  var pager_href = `${$('#app_context').val()}/app/${db_name}/${coll_name}/view?page_num={{number}}`;
 
   $.ajax({
     type: 'POST',
