@@ -26,9 +26,9 @@
     "@commitlint/cli": "^8.2.0",
     "@commitlint/config-conventional": "^8.2.0",
     "lint-staged": "^9.4.2",
-    "husky": "^3.0.8",
+    "husky": "^3.0.9",
     "release-it": "^12.4.3",
-    "eslint": "^6.5.1",
+    "eslint": "^6.6.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2"
   },
