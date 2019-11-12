@@ -302,3 +302,20 @@ exports.render_error = function render_error(res, req, err, conn) {
  * @param {Array<Object>} collection_list The collectin list
  */
 exports.cleanCollections = (collection_list) => collection_list.map((item) => item.name);
+
+/**
+ * Validate the id of a document
+ * @controller Validate Id
+ * @param {IncommingMessage} req The request
+ * @param {OutcommingMessage} res The response
+ * @param {Function} next Go to the next middleware
+ */
+exports.validateId = async function validateId(req, res, next, id) {
+  if (ObjectID.isValid(id)) {
+    return next();
+  }
+
+  return res.status(400).json({
+    msg: req.t('INVALID_ID', { id }),
+  });
+};

@@ -170,6 +170,9 @@ $(document).ready(function () {
           $('#del_coll_name').append('<option>' + $('#new_coll_name').val() + '</option>');
           $('#new_coll_name').val('');
           show_notification(data.msg, 'success');
+          setTimeout(() => {
+            location.reload(true);
+          }, 1000);
         })
         .fail(function (data) {
           show_notification(data.responseJSON.msg, 'danger');
@@ -191,6 +194,9 @@ $(document).ready(function () {
           $("#del_coll_name option:contains('" + data.coll_name + "')").remove();
           $('#del_coll_name').val($('#del_coll_name option:first').val());
           show_notification(data.msg, 'success');
+          setTimeout(() => {
+            location.reload(true);
+          }, 1000);
         })
         .fail(function (data) {
           show_notification(data.responseJSON.msg, 'danger');
@@ -520,9 +526,8 @@ function paginate() {
 function deleteDoc(doc_id) {
   if (confirm('WARNING: Are you sure you want to delete this document?') === true) {
     $.ajax({
-      method: 'POST',
-      url: `/api/v1${$('#app_context').val()}/document/${$('#db_name').val()}/${$('#coll_name').val()}/doc_delete`,
-      data: { 'doc_id': doc_id }
+      method: 'DELETE',
+      url: `/api/v1${$('#app_context').val()}/document/${$('#db_name').val()}/${$('#coll_name').val()}/${doc_id}`
     })
       .done(function (data) {
         show_notification(data.msg, 'success');

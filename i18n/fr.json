@@ -130,5 +130,6 @@
   "Connection options": "Options de connexion",
   "Monitoring": "Surveillance",
   "Link": "Lien",
-  "Backup/Restore": "Sauvegarde/Restaurer"
+  "Backup/Restore": "Sauvegarde/Restaurer",
+  "INVALID_ID": "L'ID \"{{id}}\" est invalide"
 }

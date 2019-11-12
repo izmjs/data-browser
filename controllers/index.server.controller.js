@@ -281,7 +281,7 @@ exports.showDoc = async function showDoc(req, res) {
               db_name: req.params.dbName,
               coll_name: req.params.collectionName,
               coll_count,
-              doc_id: req.params.documentId,
+              doc_id: req.params.dBrowserDocId,
               key_val: req.params.key_val,
               value_val: req.params.value_val,
               sidebar_list,
@@ -314,7 +314,7 @@ exports.editDoc = async function editDoc(req, res) {
 
   // do DB stuff
   common.get_sidebar_list(mongo_db, req.params.dbName, (e1, sidebar_list) => {
-    common.get_id_type(db, req.params.collectionName, req.params.documentId, (e2, result) => {
+    common.get_id_type(db, req.params.collectionName, req.params.dBrowserDocId, (e2, result) => {
       if (result.doc === undefined) {
         console.error('No document found');
         common.render_error(res, req, req.t('Document not found'), req.params.conn);

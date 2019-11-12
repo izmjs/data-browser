@@ -10,17 +10,42 @@ $(document).ready(function () {
     try {
       // convert BSON string to EJSON
       var ejson = toEJSON.serializeString(editor.getValue());
+      let parsed;
+      let url = `/api/v1${$('#app_context').val()}/document/${$('#db_name').val()}/${$('#coll_name').val()}`;
 
-      $.ajax({
+      try {
+        parsed = JSON.parse(ejson);
+      } catch(e) {
+        show_notification(e.message, 'danger');
+        return;
+      }
+
+      const request = {
+        url,
         method: 'POST',
         contentType: 'application/json',
-        url: `/api/v1${$('#app_context').val()}/document/${$('#db_name').val()}/${$('#coll_name').val()}/${$('#edit_request_type').val()}`,
-        data: JSON.stringify({ 'objectData': ejson })
-      })
+        data: JSON.stringify({ 'objectData': ejson }),
+      };
+
+      switch( $('#edit_request_type').val() ) {
+        case 'edit_doc': {
+          if(parsed && parsed._id) {
+            url += `/${parsed._id}`;
+          }
+
+          request.url = url;
+        }
+        break;
+        case 'insert_doc':
+        default:
+        break;
+      }
+
+      $.ajax(request)
         .done(function (data) {
           show_notification(data.msg, 'success');
           if (data.doc_id) {
-            setInterval(function () {
+            return setTimeout(function () {
               // remove "new" and replace with "edit" and redirect to edit the doc
               window.location = window.location.href.substring(0, window.location.href.length - 3) + 'edit/' + data.doc_id;
             }, 2500);
