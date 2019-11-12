@@ -208,13 +208,16 @@ $(document).ready(function () {
     if ($('#new_db_name').val() !== '') {
       $.ajax({
         method: 'POST',
-        url: $('#app_context').val() + '/database' + '/db_create',
-        data: { 'db_name': $('#new_db_name').val() }
+        url: `/api/v1/dbrowser/database/${$('#new_db_name').val()}`,
       })
         .done(function (data) {
           $('#del_db_name').append('<option>' + $('#new_db_name').val() + '</option>');
           $('#new_db_name').val('');
           show_notification(data.msg, 'success');
+
+          setTimeout(() => {
+            location.reload(true);
+          }, 2000);
         })
         .fail(function (data) {
           show_notification(data.responseJSON.msg, 'danger');
@@ -227,9 +230,8 @@ $(document).ready(function () {
   $(document).on('click', '#db_delete', function () {
     if (confirm('WARNING: Are you sure you want to delete this database and all collections?') === true) {
       $.ajax({
-        method: 'POST',
-        url: $('#app_context').val() + '/database' + '/db_delete',
-        data: { 'db_name': $('#del_db_name option:selected').text() }
+        method: 'DELETE',
+        url: `/api/v1/dbrowser/database/${$('#del_db_name option:selected').text()}`,
       })
         .done(function (data) {
           $("#del_db_name option:contains('" + data.db_name + "')").remove();

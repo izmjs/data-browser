@@ -64,7 +64,7 @@ exports.get_db_stats = function get_db_stats(mongo_db, db_name, cb) {
 
   // if at connection level we loop db's and collections
   if (db_name == null) {
-    const adminDb = mongo_db.admin();
+    const adminDb = mongo_db.db.admin();
     adminDb.listDatabases((err, db_list) => {
       if (err) {
         cb('User is not authorised', null);
@@ -207,7 +207,7 @@ exports.get_sidebar_list = function get_sidebar_list(mongo_db, db_name, cb) {
 
   // if no DB is specified, we get all DBs and collections
   if (db_name == null) {
-    const adminDb = mongo_db.admin();
+    const adminDb = mongo_db.db.admin();
     adminDb.listDatabases((err, db_list) => {
       if (db_list) {
         async.forEachOf(db_list.databases, (value, key, callback) => {

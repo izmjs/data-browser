@@ -38,15 +38,14 @@ exports.monitoring = async function monitoring(req, res) {
 exports.home = async function home(req, res) {
   // parse the connection string to get DB
   const uri = MongoURI.parse(conn_string);
-  const dbUri = uri.database;
 
   // Get DB's form pool
   const mongo_db = req.params.conn;
 
   common.get_db_status(mongo_db.db, (e1, db_status) => {
     common.get_backups((e2, backup_list) => {
-      common.get_db_stats(mongo_db, dbUri, (e3, db_stats) => {
-        common.get_sidebar_list(mongo_db, dbUri, (e4, sidebar_list) => {
+      common.get_db_stats(mongo_db, null, (e3, db_stats) => {
+        common.get_sidebar_list(mongo_db, null, (e4, sidebar_list) => {
           common.get_db_list({}, mongo_db.db, (e5, db_list) => {
             render(req, res, 'conn', {
               conn_name: 'local',
