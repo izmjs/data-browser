@@ -8,6 +8,13 @@ const { join } = require('path');
 const nconf = require('nconf');
 const { render } = require('../helpers/utils.server.helper');
 
+exports.SYSTEM_DB = [
+  'admin',
+  'config',
+  'null',
+  'local',
+];
+
 // setup DB for server stats
 
 const db = new Datastore({
@@ -73,8 +80,7 @@ exports.get_db_stats = function get_db_stats(mongo_db, db_name, cb) {
       if (db_list !== undefined) {
         async.forEachOf(exports.order_object(db_list.databases), (value, key, callback) => {
           exports.order_object(db_list.databases);
-          const skipped_dbs = ['null', 'admin', 'local'];
-          if (skipped_dbs.indexOf(value.name) === -1) {
+          if (exports.SYSTEM_DB.indexOf(value.name) === -1) {
             const tempDBName = value.name;
             mongo_db.useDb(tempDBName).db.listCollections().toArray((e1, coll_list) => {
               const coll_obj = {};
@@ -136,8 +142,7 @@ exports.get_db_list = function get_db_list(uri, mongo_db, cb) {
     adminDb.listDatabases((err, db_list) => {
       if (db_list !== undefined) {
         async.forEachOf(db_list.databases, (value, key, callback) => {
-          const skipped_dbs = ['null', 'admin', 'local'];
-          if (skipped_dbs.indexOf(value.name) === -1) {
+          if (exports.SYSTEM_DB.indexOf(value.name) === -1) {
             db_arr.push(value.name);
           }
           callback();
@@ -211,8 +216,7 @@ exports.get_sidebar_list = function get_sidebar_list(mongo_db, db_name, cb) {
     adminDb.listDatabases((err, db_list) => {
       if (db_list) {
         async.forEachOf(db_list.databases, (value, key, callback) => {
-          const skipped_dbs = ['null', 'admin', 'local'];
-          if (skipped_dbs.indexOf(value.name) === -1) {
+          if (exports.SYSTEM_DB.indexOf(value.name) === -1) {
             mongo_db.useDb(value.name).db.listCollections().toArray((e1, collections) => {
               const list = exports.cleanCollections(collections);
               exports.order_array(list);

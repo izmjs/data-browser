@@ -7,14 +7,8 @@ const commonCtrls = require('../controllers/common.server.controller');
 module.exports = {
   prefix: '/dbrowser/collection',
   routes: [{
-    path: '/:dbName/coll_create',
+    path: '/:dbName/:collectionName',
     methods: {
-      /**
-       * @body
-       * {
-       *   "collection_name": "{{collectionName}}"
-       * }
-       */
       post: {
         iam: 'modules:data-browser:collection:create',
         title: 'Create a new collection',
@@ -26,17 +20,13 @@ module.exports = {
           ctrls.create,
         ],
       },
-    },
-  }, {
-    path: '/:dbName/:collectionName/coll_name_edit',
-    methods: {
       /**
        * @body
        * {
-       *   "new_collection_name": "{{collectionName}}"
+       *   "newName": "{{collectionName}}"
        * }
        */
-      post: {
+      put: {
         iam: 'modules:data-browser:collection:name:edit',
         title: 'Rename collection',
         groups: [],
@@ -47,17 +37,7 @@ module.exports = {
           ctrls.rename,
         ],
       },
-    },
-  }, {
-    path: '/:dbName/coll_delete',
-    methods: {
-      /**
-       * @body
-       * {
-       *   "collection_name": "{{collectionName}}"
-       * }
-       */
-      post: {
+      delete: {
         iam: 'modules:data-browser:collection:remove',
         title: 'Delete a collection',
         groups: [],

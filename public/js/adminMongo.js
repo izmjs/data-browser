@@ -141,9 +141,9 @@ $(document).ready(function () {
     var newCollName = $('#coll_name_newval').val();
     if (newCollName !== '') {
       $.ajax({
-        method: 'POST',
-        url: `/api/v1${$('#app_context').val()}/collection/${$('#db_name').val()}/${$('#coll_name').val()}/coll_name_edit`,
-        data: { 'new_collection_name': newCollName }
+        method: 'PUT',
+        url: `/api/v1${$('#app_context').val()}/collection/${$('#db_name').val()}/${$('#coll_name').val()}`,
+        data: { 'newName': newCollName }
       })
         .done(function (data) {
           $('#headCollectionName').text(newCollName);
@@ -163,8 +163,7 @@ $(document).ready(function () {
     if ($('#new_coll_name').val() !== '') {
       $.ajax({
         method: 'POST',
-        url: `/api/v1${$('#app_context').val()}/collection/${$('#db_name').val()}/coll_create`,
-        data: { 'collection_name': $('#new_coll_name').val() }
+        url: `/api/v1${$('#app_context').val()}/collection/${$('#db_name').val()}/${$('#new_coll_name').val()}`,
       })
         .done(function (data) {
           $('#del_coll_name').append('<option>' + $('#new_coll_name').val() + '</option>');
@@ -186,9 +185,8 @@ $(document).ready(function () {
     var coll = $('#del_coll_name option:selected').text();
     if (coll && confirm('WARNING: Are you sure you want to delete this collection and all documents?') === true) {
       $.ajax({
-        method: 'POST',
-        url: `/api/v1${$('#app_context').val()}/collection/${$('#db_name').val()}/coll_delete`,
-        data: { 'collection_name': coll }
+        method: 'DELETE',
+        url: `/api/v1${$('#app_context').val()}/collection/${$('#db_name').val()}/${coll}`
       })
         .done(function (data) {
           $("#del_coll_name option:contains('" + data.coll_name + "')").remove();

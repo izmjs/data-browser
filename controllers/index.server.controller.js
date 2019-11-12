@@ -136,15 +136,14 @@ exports.view = async function view(req, res) {
 
   // Get DB's form pool
   const mongo_db = req.params.conn;
+  const { db } = mongo_db.useDb(req.params.dbName);
 
   // do DB stuff
-  mongo_db.db.listCollections().toArray((err, collection_list) => {
+  db.listCollections().toArray((err, collection_list) => {
     // clean up the collection list
     const cl = common.cleanCollections(collection_list);
     common.get_sidebar_list(mongo_db, req.params.dbName, (e1, sidebar_list) => {
-      mongo_db
-        .useDb(req.params.dbName)
-        .collection(req.params.collectionName)
+      db.collection(req.params.collectionName)
         .estimatedDocumentCount({}, (e2, coll_count) => {
           if (cl.indexOf(req.params.collectionName) === -1) {
             common.render_error(res, req, 'Database or Collection does not exist', req.params.conn);
