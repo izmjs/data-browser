@@ -542,7 +542,6 @@ function deleteDoc(doc_id) {
 $(document).on('click', '#btnMassDelete', function () {
   var doc_id = $('#doc_id').val();
   var coll_name = $('#coll_name').val();
-  var conn_name = $('#conn_name').val();
   var db_name = $('#db_name').val();
   var query_string;
 
@@ -571,6 +570,10 @@ $(document).on('click', '#btnMassDelete', function () {
       .done(function (data) {
         localStorage.removeItem('searchQuery');
         show_notification(data.msg, 'success', true);
+
+        setTimeout(() => {
+          location.reload(true);
+        }, 1000);
       })
       .fail(function (data) {
         show_notification(data.responseJSON.msg, 'danger');
