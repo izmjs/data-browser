@@ -1,3 +1,4 @@
+const moment = require('moment');
 const common = require('./common.server.controller');
 
 /**
@@ -109,26 +110,29 @@ exports.remove = async function remove(req, res) {
  * @param {Function} next Go to the next middleware
  */
 exports.exportCollection = async function exportCollection(req, res) {
+  const { dbName, collectionName, conn } = req.params;
+  const { excludeID } = req.query;
   // exclude _id from export
   let exportID = {};
-  if (req.query.excludeID === 'true') {
+  if (excludeID === 'true') {
     exportID = { _id: 0 };
   }
 
   // Validate database name
-  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+  if (!dbName || dbName.indexOf(' ') > -1) {
     res.status(400).json({ msg: req.t('Invalid database name') });
   }
 
   // Get DB's form pool
-  const mongo_db = req.params.conn.useDb(req.params.dbName);
+  const mongo_db = conn.useDb(dbName);
+  const fName = `${dbName}-${collectionName}-${moment().format('YYYYMMDDHHmmss')}.json`;
 
-  mongo_db.collection(req.params.collectionName).find({}, exportID).toArray((err, data) => {
+  mongo_db.collection(collectionName).find({}, exportID).toArray((err, data) => {
     if (data !== '') {
-      res.set({ 'Content-Disposition': `attachment; filename=${req.params.collectionName}.json` });
+      res.set({ 'Content-Disposition': `attachment; filename=${fName}` });
       res.send(JSON.stringify(data, null, 2));
     } else {
-      common.render_error(res, req, req.t('Export error: Collection not found'), req.params.conn);
+      common.render_error(res, req, req.t('Export error: Collection not found'), conn);
     }
   });
 };

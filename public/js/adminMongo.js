@@ -1,4 +1,5 @@
 $(document).ready(function () {
+  const TIMEOUT = 1000;
   // paginate if value is set
   if ($('#to_paginate').val() === 'true') {
     if (localStorage.getItem('message_text')) {
@@ -79,8 +80,8 @@ $(document).ready(function () {
 
   // redirect to export
   $(document).on('click', '#exportModalAction', function () {
-    var exportId = $('#exportExcludeID').is(':checked') ? 'true' : 'false';
-    window.location.href = $('#app_context').val() + '/collection' + '/' + $('#db_name').val() + '/' + $('#export_coll').val() + '/export/' + exportId;
+    var excludeID = $('#exportExcludeID').is(':checked') ? 'false' : 'true';
+    window.location.href = `/api/v1${$('#app_context').val()}/collection/${$('#db_name').val()}/${$('#export_coll').val()}/export?excludeID=${excludeID}`;
   });
 
   // sets the collection name to be used later to export entire collection
@@ -171,7 +172,7 @@ $(document).ready(function () {
           show_notification(data.msg, 'success');
           setTimeout(() => {
             location.reload(true);
-          }, 1000);
+          }, TIMEOUT);
         })
         .fail(function (data) {
           show_notification(data.responseJSON.msg, 'danger');
@@ -194,7 +195,7 @@ $(document).ready(function () {
           show_notification(data.msg, 'success');
           setTimeout(() => {
             location.reload(true);
-          }, 1000);
+          }, TIMEOUT);
         })
         .fail(function (data) {
           show_notification(data.responseJSON.msg, 'danger');
@@ -215,7 +216,7 @@ $(document).ready(function () {
 
           setTimeout(() => {
             location.reload(true);
-          }, 2000);
+          }, TIMEOUT);
         })
         .fail(function (data) {
           show_notification(data.responseJSON.msg, 'danger');
@@ -329,9 +330,9 @@ $(document).ready(function () {
       })
         .done(function (data) {
           show_notification(data.msg, 'success');
-          setInterval(function () {
-            location.reload();
-          }, 2500);
+          setTimeout(function () {
+            location.reload(true);
+          }, TIMEOUT);
         })
         .fail(function (data) {
           show_notification(data.responseJSON.msg, 'danger');
@@ -573,7 +574,7 @@ $(document).on('click', '#btnMassDelete', function () {
 
         setTimeout(() => {
           location.reload(true);
-        }, 1000);
+        }, TIMEOUT);
       })
       .fail(function (data) {
         show_notification(data.responseJSON.msg, 'danger');
