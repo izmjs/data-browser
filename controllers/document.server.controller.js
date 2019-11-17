@@ -85,7 +85,7 @@ exports.edit_doc = (req, res) => {
     return;
   }
 
-  mongo_db.collection(req.params.collectionName).save(eJsonData, (err, doc) => {
+  mongo_db.collection(req.params.collectionName).update(eJsonData, (err, doc) => {
     if (err) {
       console.error(`Error updating document: ${err}`);
       res.status(400).json({ msg: `${req.t('Error updating document')}: ${err}` });
