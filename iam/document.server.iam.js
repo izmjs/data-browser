@@ -6,8 +6,12 @@ const commonCtrls = require('../controllers/common.server.controller');
  */
 module.exports = {
   prefix: '/dbrowser/document',
+  params: [{
+    name: 'dBrowserDocId',
+    middleware: commonCtrls.validateId,
+  }],
   routes: [{
-    path: '/:dbName/:collectionName/insert_doc',
+    path: '/:dbName/:collectionName',
     methods: {
       /**
        * @body
@@ -19,7 +23,7 @@ module.exports = {
        * pm.test("Status code is 200", function () {
        *   pm.response.to.have.status(200);
        *   const { doc_id } = pm.response.json();
-       *   pm.environment.set("documentID", doc_id);
+       *   pm.environment.set("dBrowserDocId", doc_id);
        * });
        */
       post: {
@@ -31,34 +35,6 @@ module.exports = {
         middlewares: [
           commonCtrls.init,
           ctrls.insert_doc,
-        ],
-      },
-    },
-  }, {
-    path: '/:dbName/:collectionName/edit_doc',
-    methods: {
-      /**
-       * @body
-       * {
-       *   "objectData": "{\"name\":\"New name\",\"_id\":\"{{documentID}}\"}"
-       * }
-       *
-       * @test
-       * pm.test("Status code is 200", function () {
-       *   pm.response.to.have.status(200);
-       *   const { doc_id } = pm.response.json();
-       *   pm.environment.set("documentID", doc_id);
-       * });
-       */
-      post: {
-        iam: 'modules:data-browser:document:edit',
-        title: 'Edit document',
-        groups: [],
-        parents: ['modules:data-browser', 'modules:data-browser:document'],
-        description: 'Edits/updates an existing document',
-        middlewares: [
-          commonCtrls.init,
-          ctrls.edit_doc,
         ],
       },
     },
@@ -84,17 +60,35 @@ module.exports = {
       },
     },
   }, {
-    path: '/:dbName/:collectionName/doc_delete',
+    path: '/:dbName/:collectionName/:dBrowserDocId',
     methods: {
       /**
        * @body
        * {
-       *   "doc_id": "{{documentID}}"
+       *   "objectData": "{\"name\":\"New name\"}"
        * }
+       *
+       * @test
+       * pm.test("Status code is 200", function () {
+       *   pm.response.to.have.status(200);
+       *   const { doc_id } = pm.response.json();
+       *   pm.environment.set("dBrowserDocId", doc_id);
+       * });
        */
       post: {
+        iam: 'modules:data-browser:document:edit:one',
+        title: 'Edit document',
+        groups: [],
+        parents: ['modules:data-browser', 'modules:data-browser:document'],
+        description: 'Edits/updates an existing document',
+        middlewares: [
+          commonCtrls.init,
+          ctrls.edit_doc,
+        ],
+      },
+      delete: {
         iam: 'modules:data-browser:document:delete:one',
-        title: 'Deletes document',
+        title: 'Remove a specific document',
         groups: [],
         parents: ['modules:data-browser', 'modules:data-browser:document'],
         description: 'Remove a specific document',

@@ -130,5 +130,6 @@
   "Backup": "Copia de seguridad",
   "Database successfully backed up": "Base de datos de copia correctamente",
   "Query": "Consulta",
-  "Indexes": "Los índices de"
+  "Indexes": "Los índices de",
+  "INVALID_ID": ""
 }

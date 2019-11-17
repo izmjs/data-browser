@@ -1,4 +1,5 @@
 $(document).ready(function () {
+  const TIMEOUT = 1000;
   // paginate if value is set
   if ($('#to_paginate').val() === 'true') {
     if (localStorage.getItem('message_text')) {
@@ -79,8 +80,8 @@ $(document).ready(function () {
 
   // redirect to export
   $(document).on('click', '#exportModalAction', function () {
-    var exportId = $('#exportExcludeID').is(':checked') ? 'true' : 'false';
-    window.location.href = $('#app_context').val() + '/collection' + '/' + $('#db_name').val() + '/' + $('#export_coll').val() + '/export/' + exportId;
+    var excludeID = $('#exportExcludeID').is(':checked') ? 'false' : 'true';
+    window.location.href = `/api/v1${$('#app_context').val()}/collection/${$('#db_name').val()}/${$('#export_coll').val()}/export?excludeID=${excludeID}`;
   });
 
   // sets the collection name to be used later to export entire collection
@@ -141,9 +142,9 @@ $(document).ready(function () {
     var newCollName = $('#coll_name_newval').val();
     if (newCollName !== '') {
       $.ajax({
-        method: 'POST',
-        url: `/api/v1${$('#app_context').val()}/collection/${$('#db_name').val()}/${$('#coll_name').val()}/coll_name_edit`,
-        data: { 'new_collection_name': newCollName }
+        method: 'PUT',
+        url: `/api/v1${$('#app_context').val()}/collection/${$('#db_name').val()}/${$('#coll_name').val()}`,
+        data: { 'newName': newCollName }
       })
         .done(function (data) {
           $('#headCollectionName').text(newCollName);
@@ -163,13 +164,15 @@ $(document).ready(function () {
     if ($('#new_coll_name').val() !== '') {
       $.ajax({
         method: 'POST',
-        url: `/api/v1${$('#app_context').val()}/collection/${$('#db_name').val()}/coll_create`,
-        data: { 'collection_name': $('#new_coll_name').val() }
+        url: `/api/v1${$('#app_context').val()}/collection/${$('#db_name').val()}/${$('#new_coll_name').val()}`,
       })
         .done(function (data) {
           $('#del_coll_name').append('<option>' + $('#new_coll_name').val() + '</option>');
           $('#new_coll_name').val('');
           show_notification(data.msg, 'success');
+          setTimeout(() => {
+            location.reload(true);
+          }, TIMEOUT);
         })
         .fail(function (data) {
           show_notification(data.responseJSON.msg, 'danger');
@@ -183,14 +186,16 @@ $(document).ready(function () {
     var coll = $('#del_coll_name option:selected').text();
     if (coll && confirm('WARNING: Are you sure you want to delete this collection and all documents?') === true) {
       $.ajax({
-        method: 'POST',
-        url: `/api/v1${$('#app_context').val()}/collection/${$('#db_name').val()}/coll_delete`,
-        data: { 'collection_name': coll }
+        method: 'DELETE',
+        url: `/api/v1${$('#app_context').val()}/collection/${$('#db_name').val()}/${coll}`
       })
         .done(function (data) {
           $("#del_coll_name option:contains('" + data.coll_name + "')").remove();
           $('#del_coll_name').val($('#del_coll_name option:first').val());
           show_notification(data.msg, 'success');
+          setTimeout(() => {
+            location.reload(true);
+          }, TIMEOUT);
         })
         .fail(function (data) {
           show_notification(data.responseJSON.msg, 'danger');
@@ -202,13 +207,16 @@ $(document).ready(function () {
     if ($('#new_db_name').val() !== '') {
       $.ajax({
         method: 'POST',
-        url: $('#app_context').val() + '/database' + '/db_create',
-        data: { 'db_name': $('#new_db_name').val() }
+        url: `/api/v1/dbrowser/database/${$('#new_db_name').val()}`,
       })
         .done(function (data) {
           $('#del_db_name').append('<option>' + $('#new_db_name').val() + '</option>');
           $('#new_db_name').val('');
           show_notification(data.msg, 'success');
+
+          setTimeout(() => {
+            location.reload(true);
+          }, TIMEOUT);
         })
         .fail(function (data) {
           show_notification(data.responseJSON.msg, 'danger');
@@ -221,9 +229,8 @@ $(document).ready(function () {
   $(document).on('click', '#db_delete', function () {
     if (confirm('WARNING: Are you sure you want to delete this database and all collections?') === true) {
       $.ajax({
-        method: 'POST',
-        url: $('#app_context').val() + '/database' + '/db_delete',
-        data: { 'db_name': $('#del_db_name option:selected').text() }
+        method: 'DELETE',
+        url: `/api/v1/dbrowser/database/${$('#del_db_name option:selected').text()}`,
       })
         .done(function (data) {
           $("#del_db_name option:contains('" + data.db_name + "')").remove();
@@ -323,9 +330,9 @@ $(document).ready(function () {
       })
         .done(function (data) {
           show_notification(data.msg, 'success');
-          setInterval(function () {
-            location.reload();
-          }, 2500);
+          setTimeout(function () {
+            location.reload(true);
+          }, TIMEOUT);
         })
         .fail(function (data) {
           show_notification(data.responseJSON.msg, 'danger');
@@ -520,9 +527,8 @@ function paginate() {
 function deleteDoc(doc_id) {
   if (confirm('WARNING: Are you sure you want to delete this document?') === true) {
     $.ajax({
-      method: 'POST',
-      url: `/api/v1${$('#app_context').val()}/document/${$('#db_name').val()}/${$('#coll_name').val()}/doc_delete`,
-      data: { 'doc_id': doc_id }
+      method: 'DELETE',
+      url: `/api/v1${$('#app_context').val()}/document/${$('#db_name').val()}/${$('#coll_name').val()}/${doc_id}`
     })
       .done(function (data) {
         show_notification(data.msg, 'success');
@@ -537,7 +543,6 @@ function deleteDoc(doc_id) {
 $(document).on('click', '#btnMassDelete', function () {
   var doc_id = $('#doc_id').val();
   var coll_name = $('#coll_name').val();
-  var conn_name = $('#conn_name').val();
   var db_name = $('#db_name').val();
   var query_string;
 
@@ -566,6 +571,10 @@ $(document).on('click', '#btnMassDelete', function () {
       .done(function (data) {
         localStorage.removeItem('searchQuery');
         show_notification(data.msg, 'success', true);
+
+        setTimeout(() => {
+          location.reload(true);
+        }, TIMEOUT);
       })
       .fail(function (data) {
         show_notification(data.responseJSON.msg, 'danger');

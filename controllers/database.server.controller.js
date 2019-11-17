@@ -1,89 +1,52 @@
-// const mongodbBackup = require('mongodb-backup');
-// const MongoURI = require('mongo-uri');
-// const mongodbRestore = require('mongodb-restore');
-// const { join } = require('path');
-// const moment = require('moment');
+/**
+ * Create new database
+ * @controller Create
+ * @param {IncommingMessage} req The request
+ * @param {OutcommingMessage} res The response
+ * @param {Function} next Go to the next middleware
+ */
+exports.create = async function create(req, res) {
+  const { dbName } = req.params;
+  // check for valid DB name
+  if (dbName.indexOf(' ') >= 0 || dbName.indexOf('.') >= 0) {
+    res.status(400).json({ msg: req.t('Invalid database name') });
+    return;
+  }
 
-// // eslint-disable-next-line import/no-dynamic-require
-// // const { uri: conn_string } = require(resolve('config')).db;
+  // Get DB's form pool
+  const mongo_db = req.params.conn.useDb(dbName);
 
-// /**
-//  * Backup a database
-//  * @controller Backup
-//  * @param {IncommingMessage} req The request
-//  * @param {OutcommingMessage} res The response
-//  * @param {Function} next Go to the next middleware
-//  */
-// exports.backup = async function backup(req, res) {
-//   // Validate database name
-//   if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
-//     res.status(400).json({ msg: req.t('Invalid database name') });
-//   }
+  // adding a new collection to create the DB
+  mongo_db.collection('test').insertOne({}, (err) => {
+    if (err) {
+      console.error(`Error creating database: ${err}`);
+      res.status(400).json({ msg: `${req.t('Error creating database')}: ${err}` });
+    } else {
+      res.status(200).json({ msg: req.t('Database successfully created') });
+    }
+  });
+};
 
-//   // get the URI
-//   // const conn_uri = MongoURI.parse(conn_string);
-//   // const db_name = req.params.dbName;
+/**
+ * Remove a, existing database
+ * @controller Remove
+ * @param {IncommingMessage} req The request
+ * @param {OutcommingMessage} res The response
+ * @param {Function} next Go to the next middleware
+ */
+exports.remove = async function remove(req, res) {
+  const { dbName } = req.params;
 
-//   // const uri = conn_string;
+  // Get DB's form pool
+  const mongo_db = req.params.conn.useDb(dbName);
 
-//   // kick off the backup
-//   mongodbBackup({
-//     uri: 'mongodb://localhost:27017/app-dev',
-//     root: join(__dirname, '../backups'),
-//     tar: `${moment(new Date()).format('YYYYMMDD-HHmmss')}.tar.gz`,
-//     callback(err) {
-//       if (err) {
-//         console.error(`Backup DB error: ${err}`);
-//         res.status(400).json({ message: req.t('Unable to backup database') });
-//       } else {
-//         res.status(200).json({ message: req.t('Database successfully backed up') });
-//       }
-//     },
-//   });
-// };
-
-// /**
-//  * Restore a database
-//  * @controller Restore
-//  * @param {IncommingMessage} req The request
-//  * @param {OutcommingMessage} res The response
-//  * @param {Function} next Go to the next middleware
-//  */
-// exports.restore = async function restore(req, res) {
-//   const connection_list = req.app.locals.dbConnections;
-//   let dropTarget = false;
-//   if (req.body.dropTarget === true || req.body.dropTarget === false) {
-//     dropTarget = req.body.dropTarget;
-//   }
-
-//   // Check for existance of connection
-//   if (connection_list[req.params.conn] === undefined) {
-//     res.status(400).json({ message: req.t('Invalid connection') });
-//   }
-
-//   // get the URI
-//   const conn_uri = MongoURI.parse(connection_list[req.params.conn].connString);
-//   const db_name = req.params.db;
-
-//   let uri = connection_list.Local.connString;
-
-//   // add DB to URI if not present
-//   if (!conn_uri.database) {
-//     uri = `${uri}/${db_name}`;
-//   }
-
-//   // kick off the restore
-//   mongodbRestore({
-//     uri,
-//     root: join(__dirname, '../backups', db_name),
-//     drop: dropTarget,
-//     callback(err) {
-//       if (err) {
-//         console.error(`Restore DB error: ${err}`);
-//         res.status(400).json({ message: req.t('Unable to restore database') });
-//       } else {
-//         res.status(200).json({ message: req.t('Database successfully restored') });
-//       }
-//     },
-//   });
-// };
+  // delete a collection
+  mongo_db.dropDatabase((err) => {
+    if (err) {
+      console.error(`Error deleting database: ${err}`);
+      res.status(400).json({ msg: `${req.t('Error deleting database')}: ${err}` });
+    } else {
+      res.status(200).json({ msg: req.t('Database successfully deleted'), db_name: dbName });
+    }
+  });
+};

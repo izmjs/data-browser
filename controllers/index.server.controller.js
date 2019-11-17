@@ -38,15 +38,14 @@ exports.monitoring = async function monitoring(req, res) {
 exports.home = async function home(req, res) {
   // parse the connection string to get DB
   const uri = MongoURI.parse(conn_string);
-  const dbUri = uri.database;
 
   // Get DB's form pool
   const mongo_db = req.params.conn;
 
   common.get_db_status(mongo_db.db, (e1, db_status) => {
     common.get_backups((e2, backup_list) => {
-      common.get_db_stats(mongo_db, dbUri, (e3, db_stats) => {
-        common.get_sidebar_list(mongo_db, dbUri, (e4, sidebar_list) => {
+      common.get_db_stats(mongo_db, null, (e3, db_stats) => {
+        common.get_sidebar_list(mongo_db, null, (e4, sidebar_list) => {
           common.get_db_list({}, mongo_db.db, (e5, db_list) => {
             render(req, res, 'conn', {
               conn_name: 'local',
@@ -137,15 +136,14 @@ exports.view = async function view(req, res) {
 
   // Get DB's form pool
   const mongo_db = req.params.conn;
+  const { db } = mongo_db.useDb(req.params.dbName);
 
   // do DB stuff
-  mongo_db.db.listCollections().toArray((err, collection_list) => {
+  db.listCollections().toArray((err, collection_list) => {
     // clean up the collection list
     const cl = common.cleanCollections(collection_list);
     common.get_sidebar_list(mongo_db, req.params.dbName, (e1, sidebar_list) => {
-      mongo_db
-        .useDb(req.params.dbName)
-        .collection(req.params.collectionName)
+      db.collection(req.params.collectionName)
         .estimatedDocumentCount({}, (e2, coll_count) => {
           if (cl.indexOf(req.params.collectionName) === -1) {
             common.render_error(res, req, 'Database or Collection does not exist', req.params.conn);
@@ -281,7 +279,7 @@ exports.showDoc = async function showDoc(req, res) {
               db_name: req.params.dbName,
               coll_name: req.params.collectionName,
               coll_count,
-              doc_id: req.params.documentId,
+              doc_id: req.params.dBrowserDocId,
               key_val: req.params.key_val,
               value_val: req.params.value_val,
               sidebar_list,
@@ -314,7 +312,7 @@ exports.editDoc = async function editDoc(req, res) {
 
   // do DB stuff
   common.get_sidebar_list(mongo_db, req.params.dbName, (e1, sidebar_list) => {
-    common.get_id_type(db, req.params.collectionName, req.params.documentId, (e2, result) => {
+    common.get_id_type(db, req.params.collectionName, req.params.dBrowserDocId, (e2, result) => {
       if (result.doc === undefined) {
         console.error('No document found');
         common.render_error(res, req, req.t('Document not found'), req.params.conn);

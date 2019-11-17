@@ -87,7 +87,7 @@ module.exports = {
       },
     },
   }, {
-    path: '/:dbName/:collectionName/:documentId',
+    path: '/:dbName/:collectionName/:dBrowserDocId',
     methods: {
       get: {
         iam: 'modules:data-browser:app:collection:doc:show',
@@ -106,7 +106,7 @@ module.exports = {
       },
     },
   }, {
-    path: '/:dbName/:collectionName/edit/:documentId',
+    path: '/:dbName/:collectionName/edit/:dBrowserDocId',
     methods: {
       get: {
         iam: 'modules:data-browser:app:collection:doc:edit',

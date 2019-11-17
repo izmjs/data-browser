@@ -8,6 +8,13 @@ const { join } = require('path');
 const nconf = require('nconf');
 const { render } = require('../helpers/utils.server.helper');
 
+exports.SYSTEM_DB = [
+  'admin',
+  'config',
+  'null',
+  'local',
+];
+
 // setup DB for server stats
 
 const db = new Datastore({
@@ -64,7 +71,7 @@ exports.get_db_stats = function get_db_stats(mongo_db, db_name, cb) {
 
   // if at connection level we loop db's and collections
   if (db_name == null) {
-    const adminDb = mongo_db.admin();
+    const adminDb = mongo_db.db.admin();
     adminDb.listDatabases((err, db_list) => {
       if (err) {
         cb('User is not authorised', null);
@@ -73,8 +80,7 @@ exports.get_db_stats = function get_db_stats(mongo_db, db_name, cb) {
       if (db_list !== undefined) {
         async.forEachOf(exports.order_object(db_list.databases), (value, key, callback) => {
           exports.order_object(db_list.databases);
-          const skipped_dbs = ['null', 'admin', 'local'];
-          if (skipped_dbs.indexOf(value.name) === -1) {
+          if (exports.SYSTEM_DB.indexOf(value.name) === -1) {
             const tempDBName = value.name;
             mongo_db.useDb(tempDBName).db.listCollections().toArray((e1, coll_list) => {
               const coll_obj = {};
@@ -136,8 +142,7 @@ exports.get_db_list = function get_db_list(uri, mongo_db, cb) {
     adminDb.listDatabases((err, db_list) => {
       if (db_list !== undefined) {
         async.forEachOf(db_list.databases, (value, key, callback) => {
-          const skipped_dbs = ['null', 'admin', 'local'];
-          if (skipped_dbs.indexOf(value.name) === -1) {
+          if (exports.SYSTEM_DB.indexOf(value.name) === -1) {
             db_arr.push(value.name);
           }
           callback();
@@ -207,12 +212,11 @@ exports.get_sidebar_list = function get_sidebar_list(mongo_db, db_name, cb) {
 
   // if no DB is specified, we get all DBs and collections
   if (db_name == null) {
-    const adminDb = mongo_db.admin();
+    const adminDb = mongo_db.db.admin();
     adminDb.listDatabases((err, db_list) => {
       if (db_list) {
         async.forEachOf(db_list.databases, (value, key, callback) => {
-          const skipped_dbs = ['null', 'admin', 'local'];
-          if (skipped_dbs.indexOf(value.name) === -1) {
+          if (exports.SYSTEM_DB.indexOf(value.name) === -1) {
             mongo_db.useDb(value.name).db.listCollections().toArray((e1, collections) => {
               const list = exports.cleanCollections(collections);
               exports.order_array(list);
@@ -302,3 +306,20 @@ exports.render_error = function render_error(res, req, err, conn) {
  * @param {Array<Object>} collection_list The collectin list
  */
 exports.cleanCollections = (collection_list) => collection_list.map((item) => item.name);
+
+/**
+ * Validate the id of a document
+ * @controller Validate Id
+ * @param {IncommingMessage} req The request
+ * @param {OutcommingMessage} res The response
+ * @param {Function} next Go to the next middleware
+ */
+exports.validateId = async function validateId(req, res, next, id) {
+  if (ObjectID.isValid(id)) {
+    return next();
+  }
+
+  return res.status(400).json({
+    msg: req.t('INVALID_ID', { id }),
+  });
+};

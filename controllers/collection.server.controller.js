@@ -1,3 +1,4 @@
+const moment = require('moment');
 const common = require('./common.server.controller');
 
 /**
@@ -8,16 +9,22 @@ const common = require('./common.server.controller');
  * @param {Function} next Go to the next middleware
  */
 exports.create = async function create(req, res) {
+  const { dbName, collectionName } = req.params;
   // Validate database name
-  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+  if (!dbName || dbName.indexOf(' ') > -1) {
     res.status(400).json({ msg: req.t('Invalid database name') });
+  }
+
+  // Validate collection name
+  if (!collectionName || collectionName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid collection name') });
   }
 
   // Get DB's form pool
   const mongo_db = req.params.conn.useDb(req.params.dbName);
 
   // adding a new collection
-  mongo_db.createCollection(req.body.collection_name, (err) => {
+  mongo_db.createCollection(collectionName, (err) => {
     if (err) {
       console.error(`Error creating collection: ${err}`);
       res.status(400).json({ msg: `${req.t('Error creating collection')}: ${err}` });
@@ -35,22 +42,26 @@ exports.create = async function create(req, res) {
  * @param {Function} next Go to the next middleware
  */
 exports.rename = async function rename(req, res) {
+  const { dbName, collectionName } = req.params;
+  const { newName } = req.body;
   // Validate database name
-  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+  if (!dbName || dbName.indexOf(' ') > -1) {
     res.status(400).json({ msg: req.t('Invalid database name') });
   }
 
-  // Get DB's form pool
-  const mongo_db = req.params.conn.useDb(req.params.dbName);
+  // Validate collection name
+  if (!newName || typeof newName !== 'string' || newName.indexOf(' ') > -1) {
+    res.status(400).json({ msg: req.t('Invalid collection name') });
+  }
 
-  const { collectionName } = req.params;
-  const { new_collection_name } = req.body;
+  // Get DB's form pool
+  const mongo_db = req.params.conn.useDb(dbName);
 
   // change a collection name
   mongo_db
     .collection(collectionName)
     .rename(
-      new_collection_name,
+      newName,
       { dropTarget: false },
       (err) => {
         if (err) {
@@ -71,16 +82,17 @@ exports.rename = async function rename(req, res) {
  * @param {Function} next Go to the next middleware
  */
 exports.remove = async function remove(req, res) {
+  const { dbName, collectionName } = req.params;
   // Validate database name
-  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+  if (!dbName || dbName.indexOf(' ') > -1) {
     res.status(400).json({ msg: req.t('Invalid database name') });
   }
 
   // Get DB's form pool
-  const mongo_db = req.params.conn.useDb(req.params.dbName);
+  const mongo_db = req.params.conn.useDb(dbName);
 
   // delete a collection
-  mongo_db.dropCollection(req.body.collection_name, (err) => {
+  mongo_db.dropCollection(collectionName, (err) => {
     if (err) {
       console.error(`Error deleting collection: ${err}`);
       res.status(400).json({ msg: `${req.t('Error deleting collection')}: ${err}` });
@@ -98,26 +110,29 @@ exports.remove = async function remove(req, res) {
  * @param {Function} next Go to the next middleware
  */
 exports.exportCollection = async function exportCollection(req, res) {
+  const { dbName, collectionName, conn } = req.params;
+  const { excludeID } = req.query;
   // exclude _id from export
   let exportID = {};
-  if (req.query.excludeID === 'true') {
+  if (excludeID === 'true') {
     exportID = { _id: 0 };
   }
 
   // Validate database name
-  if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
+  if (!dbName || dbName.indexOf(' ') > -1) {
     res.status(400).json({ msg: req.t('Invalid database name') });
   }
 
   // Get DB's form pool
-  const mongo_db = req.params.conn.useDb(req.params.dbName);
+  const mongo_db = conn.useDb(dbName);
+  const fName = `${dbName}-${collectionName}-${moment().format('YYYYMMDDHHmmss')}.json`;
 
-  mongo_db.collection(req.params.collectionName).find({}, exportID).toArray((err, data) => {
+  mongo_db.collection(collectionName).find({}, exportID).toArray((err, data) => {
     if (data !== '') {
-      res.set({ 'Content-Disposition': `attachment; filename=${req.params.collectionName}.json` });
+      res.set({ 'Content-Disposition': `attachment; filename=${fName}` });
       res.send(JSON.stringify(data, null, 2));
     } else {
-      common.render_error(res, req, req.t('Export error: Collection not found'), req.params.conn);
+      common.render_error(res, req, req.t('Export error: Collection not found'), conn);
     }
   });
 };

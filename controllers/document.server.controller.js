@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 const ejson = require('mongodb-extended-json');
+const { ObjectID } = require('mongodb');
 
 const common = require('./common.server.controller');
 
@@ -68,6 +69,7 @@ exports.insert_doc = (req, res) => {
  * @param {Function} next Go to the next middleware
  */
 exports.edit_doc = (req, res) => {
+  const { dBrowserDocId } = req.params;
   // Validate database name
   if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
     res.status(400).json({ msg: req.t('Invalid database name') });
@@ -85,17 +87,27 @@ exports.edit_doc = (req, res) => {
     return;
   }
 
-  mongo_db.collection(req.params.collectionName).update(eJsonData, (err, doc) => {
-    if (err) {
-      console.error(`Error updating document: ${err}`);
-      res.status(400).json({ msg: `${req.t('Error updating document')}: ${err}` });
-    } else if (doc.nModified === 0) {
-      console.error('Error updating document: Document ID is incorrect');
-      res.status(400).json({ msg: req.t('Error updating document: Syntax error') });
-    } else {
-      res.status(200).json({ msg: req.t('Document successfully updated') });
-    }
-  });
+  delete eJsonData._id;
+
+  mongo_db.collection(req.params.collectionName).findOneAndReplace(
+    { _id: new ObjectID(dBrowserDocId) },
+    eJsonData,
+    { returnOriginal: false },
+    (err, doc) => {
+      if (err) {
+        console.error(`Error updating document: ${err}`);
+        res.status(400).json({ msg: `${req.t('Error updating document')}: ${err}` });
+      } else if (doc.nModified === 0) {
+        console.error('Error updating document: Document ID is incorrect');
+        res.status(400).json({ msg: req.t('Error updating document: Syntax error') });
+      } else {
+        res.status(200).json({
+          msg: req.t('Document successfully updated'),
+          value: doc.value,
+        });
+      }
+    },
+  );
 };
 
 /**
@@ -147,6 +159,7 @@ exports.mass_delete = (req, res) => {
  * @param {Function} next Go to the next middleware
  */
 exports.doc_delete = (req, res) => {
+  const { dBrowserDocId } = req.params;
   // Validate database name
   if (!req.params.dbName || req.params.dbName.indexOf(' ') > -1) {
     res.status(400).json({ msg: req.t('Invalid database name') });
@@ -154,7 +167,7 @@ exports.doc_delete = (req, res) => {
 
   // Get DB's form pool
   const mongo_db = req.params.conn.useDb(req.params.dbName);
-  common.get_id_type(mongo_db, req.params.collectionName, req.body.doc_id, (err, result) => {
+  common.get_id_type(mongo_db, req.params.collectionName, dBrowserDocId, (err, result) => {
     if (result.doc) {
       mongo_db
         .collection(req.params.collectionName)
