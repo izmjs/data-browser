@@ -2,11 +2,11 @@ const fs = require('fs');
 const junk = require('junk');
 const async = require('async');
 const { ObjectID } = require('mongodb');
-const Datastore = require('nedb');
 const mongoose = require('mongoose');
 const { join } = require('path');
 const nconf = require('nconf');
 const { render } = require('../helpers/utils.server.helper');
+const { db } = require('../helpers/monitoring.server.helper');
 
 exports.SYSTEM_DB = [
   'admin',
@@ -14,13 +14,6 @@ exports.SYSTEM_DB = [
   'null',
   'local',
 ];
-
-// setup DB for server stats
-
-const db = new Datastore({
-  filename: join(__dirname, '../data/dbStats.db'),
-  autoload: true,
-});
 
 /**
  * Init request params

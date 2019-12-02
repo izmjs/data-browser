@@ -1,3 +1,11 @@
+const Datastore = require('nedb');
+const { join } = require('path');
+
+exports.db = new Datastore({
+  filename: join(__dirname, '../data/dbStats.db'),
+  autoload: true,
+});
+
 function getDocCounts(currCounts, newCounts) {
   const count = currCounts;
   const newDocCounts = {

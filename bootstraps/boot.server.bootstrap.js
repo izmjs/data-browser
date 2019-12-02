@@ -1,17 +1,10 @@
 
-const Datastore = require('nedb');
 const mongoose = require('mongoose');
-const { join } = require('path');
 
 // eslint-disable-next-line import/no-unresolved
 const { addIamToRoles } = require('utils');
 
-const { serverMonitoring } = require('../helpers/monitoring.server.helper');
-
-const db = new Datastore({
-  filename: join(__dirname, '../data/dbStats.db'),
-  autoload: true,
-});
+const { serverMonitoring, db } = require('../helpers/monitoring.server.helper');
 
 /**
  * Clean server cache
