@@ -30,7 +30,7 @@
     "release-it": "^12.4.3",
     "eslint": "^6.7.2",
     "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-import": "^2.18.2"
+    "eslint-plugin-import": "^2.19.1"
   },
   "commitlint": {
     "extends": [
@@ -56,7 +56,7 @@
     "junk": "^3.1.0",
     "moment": "^2.24.0",
     "mongo-uri": "^0.1.2",
-    "mongodb": "^3.3.5",
+    "mongodb": "^3.4.1",
     "mongodb-extended-json": "^1.10.2",
     "nconf": "^0.10.0",
     "nedb": "^1.8.0"
