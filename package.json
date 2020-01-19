@@ -23,10 +23,10 @@
     "url": "https://github.com/izmjs/data-browser.git"
   },
   "devDependencies": {
-    "@commitlint/cli": "^8.3.4",
+    "@commitlint/cli": "^8.3.5",
     "@commitlint/config-conventional": "^8.3.4",
     "lint-staged": "^9.5.0",
-    "husky": "^4.0.7",
+    "husky": "^4.0.10",
     "release-it": "^12.4.3",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
@@ -56,7 +56,7 @@
     "junk": "^3.1.0",
     "moment": "^2.24.0",
     "mongo-uri": "^0.1.2",
-    "mongodb": "^3.4.1",
+    "mongodb": "^3.5.1",
     "mongodb-extended-json": "^1.10.2",
     "nconf": "^0.10.0",
     "nedb": "^1.8.0"
