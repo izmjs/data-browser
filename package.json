@@ -25,7 +25,7 @@
   "devDependencies": {
     "@commitlint/cli": "^8.3.5",
     "@commitlint/config-conventional": "^8.3.4",
-    "lint-staged": "^10.2.0",
+    "lint-staged": "^10.2.1",
     "husky": "^4.2.5",
     "release-it": "^13.5.7",
     "eslint": "^6.8.0",
@@ -54,7 +54,7 @@
     "async": "^3.2.0",
     "express-handlebars": "^4.0.4",
     "junk": "^3.1.0",
-    "moment": "^2.24.0",
+    "moment": "^2.25.0",
     "mongo-uri": "^0.1.2",
     "mongodb": "^3.5.7",
     "mongodb-extended-json": "^1.11.0",
