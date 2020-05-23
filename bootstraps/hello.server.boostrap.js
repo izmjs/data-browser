@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 const { readFile } = require('fs');
 const { promisify } = require('util');
 const { resolve } = require('path');
@@ -16,7 +14,7 @@ function center(msg = '') {
   return `${text}${' '.repeat(SQUARE_LENGTH - text.length)}`;
 }
 
-module.exports = async (config) => {
+module.exports = async ({ app: { secure, host, port } }) => {
   if (process.env.NODE_ENV === 'test') {
     return;
   }
@@ -26,7 +24,7 @@ module.exports = async (config) => {
   });
 
 
-  const url = `http${config.secure && config.secure.ssl ? 's' : ''}://${config.host}:${config.port}`;
+  const url = `http${secure && secure.ssl ? 's' : ''}://${host}:${port}`;
 
   renderString(txt, {
     message: `  |${center(`URL: ${url}/dbrowser/app`)}|`,

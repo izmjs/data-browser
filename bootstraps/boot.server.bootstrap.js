@@ -1,8 +1,6 @@
 
 const mongoose = require('mongoose');
-
-// eslint-disable-next-line import/no-unresolved
-const { addIamToRoles } = require('utils');
+const { addIamToRoles } = require('@helpers/utils');
 
 const { serverMonitoring, db } = require('../helpers/monitoring.server.helper');
 
