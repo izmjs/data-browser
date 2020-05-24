@@ -3,7 +3,7 @@ const { join } = require('path');
 
 exports.db = new Datastore({
   filename: join(__dirname, '../data/dbStats.db'),
-  autoload: true,
+  autoload: false,
 });
 
 function getDocCounts(currCounts, newCounts) {
