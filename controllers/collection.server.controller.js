@@ -1,4 +1,4 @@
-const moment = require('moment');
+const dayjs = require('dayjs');
 const common = require('./common.server.controller');
 
 /**
@@ -125,7 +125,7 @@ exports.exportCollection = async function exportCollection(req, res) {
 
   // Get DB's form pool
   const mongo_db = conn.useDb(dbName);
-  const fName = `${dbName}-${collectionName}-${moment().format('YYYYMMDDHHmmss')}.json`;
+  const fName = `${dbName}-${collectionName}-${dayjs().format('YYYYMMDDHHmmss')}.json`;
 
   mongo_db.collection(collectionName).find({}, exportID).toArray((err, data) => {
     if (data !== '') {

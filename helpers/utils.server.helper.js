@@ -1,6 +1,11 @@
 const { join } = require('path');
 const expressHandlebars = require('express-handlebars');
-const moment = require('moment');
+const dayjs = require('dayjs');
+const relativeTime = require('dayjs/plugin/relativeTime');
+const duration = require('dayjs/plugin/duration');
+
+dayjs.extend(relativeTime);
+dayjs.extend(duration);
 
 const viewsDir = join(__dirname, '../views');
 
@@ -37,7 +42,7 @@ const handlebars = expressHandlebars.create({
       return `${(bytes / k ** i).toPrecision(dm)} ${sizes[i]}`;
     },
     formatDuration(time) {
-      return moment.duration(time, 'seconds').humanize();
+      return dayjs.duration(time, 'seconds').humanize();
     },
   },
 });
