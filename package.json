@@ -14,13 +14,13 @@
   },
   "dependencies": {
     "async": "^3.2.0",
-    "dayjs": "^1.9.6",
+    "dayjs": "^1.9.7",
     "express-handlebars": "^5.2.0",
     "junk": "^3.1.0",
     "mongo-uri": "^0.1.2",
     "mongodb": "^3.6.3",
     "mongodb-extended-json": "^1.11.0",
-    "nconf": "^0.10.0",
+    "nconf": "^0.11.0",
     "nedb": "^1.8.0"
   }
 }
