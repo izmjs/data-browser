@@ -20,7 +20,7 @@
     "mongo-uri": "^0.1.2",
     "mongodb": "^3.6.6",
     "mongodb-extended-json": "^1.11.0",
-    "nconf": "^0.11.2",
+    "nconf": "^0.11.4",
     "nedb": "^1.8.0"
   }
 }
